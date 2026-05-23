@@ -67,31 +67,6 @@ TenaCare separates professional boundaries into four secure dashboard routes:
 
 ---
 
-## Screenshots
-
-| Logo | Patient login |
-|------|----------------|
-| ![Tena Care](./image.png) | ![Fayda login](./image%20copy.png) |
-
----
-
-## Run locally
-
-```bash
-pnpm install
-pnpm dev
-```
-
-Open **http://localhost:5173** (mock data — no server required).
-
-```bash
-pnpm dev:all                    # API + frontend
-VITE_USE_API=true pnpm dev:all  # force live API
-rm -f server/tanecare.db && pnpm dev:all   # reset database seed
-```
-
----
-
 ## How the Code Works
 
 - **Type contract layer (`src/types/index.ts`)** — TypeScript interfaces for patients, prescriptions, staff, alarms, health records, and workflow states to prevent runtime shape bugs.
@@ -99,15 +74,3 @@ rm -f server/tanecare.db && pnpm dev:all   # reset database seed
 - **API client (`src/api/client.ts`)** — Switches between mock store and Express API when `VITE_USE_API=true`.
 - **React UI (`src/pages/`, `src/components/`)** — Route-based portals (patient, doctor, pharmacy, admin); components render live data from hooks (`useApiData`) and update views when prescriptions or alarms change.
 - **SQLite backend (`server/`)** — Optional persistent database (`server/tanecare.db`) with seeded staff, patients, prescriptions, and health records.
-
----
-
-## Repository
-
-**https://github.com/royalsecond3-droid/Pharma**
-
-```bash
-git clone https://github.com/royalsecond3-droid/Pharma.git
-cd Pharma
-pnpm install && pnpm dev
-```
