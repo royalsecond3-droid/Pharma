@@ -9,7 +9,7 @@ import {
 import { api } from "@/api/client";
 import type { StaffProfile, StaffRole } from "@/types";
 
-const STORAGE_KEY = "medicare_staff_session";
+const STORAGE_KEY = "tanecare_staff_session";
 
 interface StaffAuthContextValue {
   staff: StaffProfile | null;

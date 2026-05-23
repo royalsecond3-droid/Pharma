@@ -1,6 +1,7 @@
 import { LogOut } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router";
 import { useStaffAuth } from "@/context/StaffAuthContext";
+import { APP_NAME } from "@/lib/brand";
 import type { StaffRole } from "@/types";
 
 interface NavItem {
@@ -39,7 +40,7 @@ export function WebPortalLayout({
       >
         <div className="mb-8">
           <div className="text-lg font-bold text-foreground" style={{ color: accent }}>
-            Tane Care
+            {APP_NAME}
           </div>
           <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {title}

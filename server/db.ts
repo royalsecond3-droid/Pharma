@@ -4,7 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.join(__dirname, "medicare.db");
+const DB_PATH = path.join(__dirname, "tanecare.db");
 
 export const db = new Database(DB_PATH);
 
@@ -121,7 +121,7 @@ function seedStaff() {
   `);
 
   insert.run(
-    "admin@medicare.et",
+    "admin@tanecare.et",
     "admin123",
     "admin",
     "System Administrator",
@@ -129,7 +129,7 @@ function seedStaff() {
     "ADM-001",
   );
   insert.run(
-    "doctor@medicare.et",
+    "doctor@tanecare.et",
     "doctor123",
     "doctor",
     "Dr. Abebe Kebede",
@@ -137,7 +137,7 @@ function seedStaff() {
     "MD-ETH-8842",
   );
   insert.run(
-    "pharmacy@medicare.et",
+    "pharmacy@tanecare.et",
     "pharmacy123",
     "pharmacy",
     "Helen Tadesse",

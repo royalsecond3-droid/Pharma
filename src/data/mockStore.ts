@@ -273,15 +273,15 @@ const HEALTH_RECORDS: Record<string, HealthRecord[]> = {
 const STAFF_MOCK: StaffProfile[] = [
   {
     id: 1,
-    email: "admin@medicare.et",
+    email: "admin@tanecare.et",
     role: "admin",
     fullName: "System Administrator",
-    facilityName: "MediCare HQ",
+    facilityName: "Tane Care HQ",
     licenseId: "ADM-001",
   },
   {
     id: 2,
-    email: "doctor@medicare.et",
+    email: "doctor@tanecare.et",
     role: "doctor",
     fullName: "Dr. Abebe Kebede",
     facilityName: "St. Mary's Medical Center",
@@ -289,7 +289,7 @@ const STAFF_MOCK: StaffProfile[] = [
   },
   {
     id: 3,
-    email: "pharmacy@medicare.et",
+    email: "pharmacy@tanecare.et",
     role: "pharmacy",
     fullName: "Helen Tadesse",
     facilityName: "CityCare Pharmacy",
@@ -298,9 +298,9 @@ const STAFF_MOCK: StaffProfile[] = [
 ];
 
 const STAFF_PASSWORDS: Record<string, string> = {
-  "admin@medicare.et": "admin123",
-  "doctor@medicare.et": "doctor123",
-  "pharmacy@medicare.et": "pharmacy123",
+  "admin@tanecare.et": "admin123",
+  "doctor@tanecare.et": "doctor123",
+  "pharmacy@tanecare.et": "pharmacy123",
 };
 
 function alarmStorageKey(fin: string) {
@@ -322,7 +322,7 @@ function saveAlarms(fin: string, alarms: MedicationAlarm[]) {
 }
 
 function profileOverridesKey(fin: string) {
-  return `medicare_mock_profile_${fin}`;
+  return `tanecare_mock_profile_${fin}`;
 }
 
 function getProfile(fin: string): UserProfile {

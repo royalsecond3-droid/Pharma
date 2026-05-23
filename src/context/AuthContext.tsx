@@ -10,8 +10,8 @@ import {
 import { api } from "@/api/client";
 import type { UserProfile } from "@/types";
 
-const AUTH_STORAGE_KEY = "medicare_patient_session";
-const FIN_STORAGE_KEY = "medicare_patient_fin";
+const AUTH_STORAGE_KEY = "tanecare_patient_session";
+const FIN_STORAGE_KEY = "tanecare_patient_fin";
 
 interface AuthContextValue {
   isAuthenticated: boolean;

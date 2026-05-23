@@ -18,6 +18,7 @@ import {
   isValidFin,
   normalizeFin,
 } from "@/lib/fayda";
+import { APP_NAME } from "@/lib/brand";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -102,7 +103,7 @@ export function LoginPage() {
                   letterSpacing: -0.5,
                 }}
               >
-                Tane Care
+                {APP_NAME}
               </div>
               <div
                 style={{
@@ -111,7 +112,7 @@ export function LoginPage() {
                   fontWeight: 500,
                 }}
               >
-                Patient Portal
+                Patient app
               </div>
             </div>
           </div>

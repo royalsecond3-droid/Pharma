@@ -10,9 +10,9 @@ Secure healthcare ecosystem for **mental health & Alzheimer's care**, built on E
 |--------|-----|------------|
 | **Landing** | http://localhost:5173/ | — |
 | **Patient** | `/patient/login` | Fayda FIN (12+ digits) |
-| **Doctor** | `/doctor/login` | `doctor@medicare.et` / `doctor123` |
-| **Pharmacy** | `/pharmacy/login` | `pharmacy@medicare.et` / `pharmacy123` |
-| **Admin** | `/admin/login` | `admin@medicare.et` / `admin123` |
+| **Doctor** | `/doctor/login` | `doctor@tanecare.et` / `doctor123` |
+| **Pharmacy** | `/pharmacy/login` | `pharmacy@tanecare.et` / `pharmacy123` |
+| **Admin** | `/admin/login` | `admin@tanecare.et` / `admin123` |
 
 ## How it works
 
@@ -48,7 +48,7 @@ cd node_modules/better-sqlite3 && npm run build-release
 ## Stack
 
 - React 18 + TypeScript + Vite + Tailwind CSS 4
-- Express API + **SQLite** (`server/medicare.db`)
+- Express API + **SQLite** (`server/tanecare.db`)
 - Fayda FIN as the universal patient identifier
 
 ## Demo patients (Fayda FIN)
@@ -64,7 +64,7 @@ cd node_modules/better-sqlite3 && npm run build-release
 | Meron Assefa | `789012345678` |
 | Tigist Worku | `890123456789` |
 
-Mock data is seeded on API startup. To reset: delete `server/medicare.db` and restart `pnpm dev`.
+Mock data is seeded on API startup. To reset: delete `server/tanecare.db` and restart `pnpm dev`.
 
 ## Database tables
 

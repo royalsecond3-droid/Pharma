@@ -17,7 +17,7 @@ const ROLE_CONFIG: Record<
   doctor: {
     title: "Healthcare Provider Portal",
     subtitle: "Electronic health records & digital prescribing",
-    demoEmail: "doctor@medicare.et",
+    demoEmail: "doctor@tanecare.et",
     demoPassword: "doctor123",
     accent: "#6C63FF",
     home: "/doctor",
@@ -25,7 +25,7 @@ const ROLE_CONFIG: Record<
   pharmacy: {
     title: "Pharmacy Portal",
     subtitle: "Fayda-verified prescription fulfillment",
-    demoEmail: "pharmacy@medicare.et",
+    demoEmail: "pharmacy@tanecare.et",
     demoPassword: "pharmacy123",
     accent: "#0FB8C3",
     home: "/pharmacy",
@@ -33,7 +33,7 @@ const ROLE_CONFIG: Record<
   admin: {
     title: "Administration Portal",
     subtitle: "Platform management & analytics",
-    demoEmail: "admin@medicare.et",
+    demoEmail: "admin@tanecare.et",
     demoPassword: "admin123",
     accent: "#0F1B35",
     home: "/admin",
