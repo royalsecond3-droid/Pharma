@@ -82,3 +82,4 @@ Mock data is seeded on API startup. To reset: delete `server/tanecare.db` and re
 | `pnpm dev:client` | Vite only |
 | `pnpm dev:server` | API only |
 | `pnpm build` | Production build |
+# hacka
