@@ -6,7 +6,6 @@ import {
   IdCard,
   Scan,
   Shield,
-  Stethoscope,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { MobileShell } from "@/components/layout/MobileShell";
