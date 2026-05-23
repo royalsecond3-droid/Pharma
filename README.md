@@ -1,85 +1,47 @@
-# Tane Care — Fayda Digital Health Platform
+# TenaCare - Digital Medical Prescription & Fulfillment Portal
 
-Secure healthcare ecosystem for **mental health & Alzheimer's care**, built on Ethiopia's **Fayda National Digital ID**. Connects patients, doctors, pharmacies, and administrators in one web platform.
+<div align="center">
+  <img src="photo_2026-05-23_12-34-55.jpg" alt="TENA CARE LOGO" width="200">
+</div>
+<b>Supporting Mental Well-Being in Healthcare</b>
+As people reach older age health related problems become a major challenge and our app is gonna help them manage their prescriptions.
 
-**Patient app:** medications, doctor-prescribed schedule with alarms, profile (Fayda FIN), and **SOS emergency** (hold-to-alert caregiver — demo mode).
+TenaCare is a web platform that eliminates the dangers of unreadable medical handwriting, lost/mishandeled prescriptions, and the exhausting struggle of "medication hunting" across cities. By digitizing the end-to-end pharmaceutical lifecycle, FlipCare bridges the gap between clinical prescription issuance and home-delivery fulfillment.
 
-## Portals
+## Programming Features Used 
 
-| Portal | URL | Demo login |
-|--------|-----|------------|
-| **Landing** | http://localhost:5173/ | — |
-| **Patient** | `/patient/login` | Fayda FIN (12+ digits) |
-| **Doctor** | `/doctor/login` | `doctor@tanecare.et` / `doctor123` |
-| **Pharmacy** | `/pharmacy/login` | `pharmacy@tanecare.et` / `pharmacy123` |
-| **Admin** | `/admin/login` | `admin@tanecare.et` / `admin123` |
+* Frontend: TypeScript
+* Backend: Nodejs
+* Database: FireBase
 
-## How it works
+---
 
-1. **Doctor** — Looks up patient by Fayda ID, updates EHR, issues digital prescriptions.
-2. **Pharmacy** — Retrieves authorized Rx by the same Fayda ID, marks medications dispensed (no paper).
-3. **Patient** — Mobile app with meds, schedule/alarms, SOS, and prescription history.
-4. **Admin** — Platform analytics, patient registry, staff accounts.
+## 🚀 Key Advantages & Core Features
 
-## Run locally
+<div align="center">
+  <img src="photo_2026-05-23_11-55-03.jpg" alt="FAYDA ID Verification" width="300">
+</div>
 
-```bash
-pnpm install
-pnpm dev
-```
+* National Fayda ID Sync: Patients use their unique Fayda ID card numbers to instantly pull, verify, and fill their active electronic prescriptions at any participating hospital node or pharmacy hub in Ethiopia.
+* Cognitive & Behavioral Health Safeguards: Built directly for vulnerable or disabled users (such as individuals managing Alzheimer's, Dementia, or advanced cognitive issues) who cannot interact with technology effectively. The portal allows credentialed doctors to act on their behalf, securely routing orders straight to fulfillment channels.
+* Smart Caregiver Alarm & Reminder System: When a critical behavioral or maintenance medication is ready for pickup or due for home delivery, the system triggers real-time data syncs and automated, high-visibility visual alert indicators to keep primary family caregivers synchronized.
+* Instant Real-Time Sync Loop: When a doctor clicks the "Send Prescription" button, the order bypasses slow traditional channels, broadcasting to the dispensary dashboard pipeline in under a second without a page refresh.
 
-Open **http://localhost:5173** — the app uses **built-in mock data** by default (no API server needed).
+---
 
-To use the real SQLite API instead, run both servers and set:
+## 📱 The 4-Interface System Architecture
 
-```bash
-VITE_USE_API=true pnpm dev
-```
+FlipCare separates its professional boundaries into four dedicated, secure dashboard routes, all communicating dynamically via a shared browser data memory engine:
 
-- Frontend: http://localhost:5173  
-- API + SQLite: http://localhost:3001 (only when `VITE_USE_API=true`)
+1. The Doctor Portal : A streamlined clinical dashboard featuring an intake matrix and a Clinical Drug Catalog. Doctors can securely input patient data, match it with a Fayda ID, and issue prescriptions for disabled users who cannot handle technology.
+2. The Pharmacist Terminal : A high-velocity dispensary queue interface where pharmacists track incoming Prescriptions, check real-time stock parameters, and actively provide the confirmed prescribed medicine to users : Pending Verification ➔ Preparing ➔ Confirmed/Delivered.
+3. The Central Administrative Panel : An independent system audit core reserved for government official and medical network supervisors to track the proper usage of the Fayda Id Verification, calculate average preparation velocity, review regional demand, and handle data compliance.
+4. The Patient Prescription Tracking Portal: A customer-facing module designed for tracking active prescribed medication, checking baseline pricing catalogs, and tracking the scheduling arrangements for their medicines as well as alarm systems that notify them to take their medicines on time.
 
-If SQLite bindings fail after install:
+---
 
-```bash
-cd node_modules/better-sqlite3 && npm run build-release
-```
+## 💻 How the Code Works
 
-## Stack
-
-- React 18 + TypeScript + Vite + Tailwind CSS 4
-- Express API + **SQLite** (`server/tanecare.db`)
-- Fayda FIN as the universal patient identifier
-
-## Demo patients (Fayda FIN)
-
-| Patient | FIN |
-|---------|-----|
-| Sarah Johnson | `123456789012` |
-| Abebe Tadesse | `234567890123` |
-| Helen Girma | `345678901234` |
-| Dawit Mekonnen | `456789012345` |
-| Ruth Haile | `567890123456` |
-| Yonas Bekele | `678901234567` |
-| Meron Assefa | `789012345678` |
-| Tigist Worku | `890123456789` |
-
-Mock data is seeded on API startup. To reset: delete `server/tanecare.db` and restart `pnpm dev`.
-
-## Database tables
-
-- `users` — patients (Fayda FIN)
-- `staff` — doctors, pharmacists, admins
-- `prescriptions` — digital Rx + pharmacy fulfillment status
-- `health_records` — EHR consultation notes
-- `alarms` — patient medication reminders
-
-## Scripts
-
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | API + frontend |
-| `pnpm dev:client` | Vite only |
-| `pnpm dev:server` | API only |
-| `pnpm build` | Production build |
-# hacka
+* The Array Contract Layer (`types.ts`): Written strictly in TypeScript to define structural object layouts for Patient Demographics, Specialty Category tracking, and Prescription Workflow States to eliminate application runtime bugs.
+* LocalStorage System Memory (`app.ts`): Emulates a persistent, stateful backend database entirely client-side. This ensures absolute offline presentation resilience during live judging with zero risk of server timeouts or data loss on a page refresh.
+* Dynamic DOM UI Painting (`app.js`): The script dynamically samples the local browser storage memory volumes and automatically handles real-time element injection, painting clear data rows and warning indicators directly onto the active screen view.
