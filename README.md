@@ -1,47 +1,77 @@
-# TenaCare - Digital Medical Prescription & Fulfillment Portal
+# Tena Care — Digital Medical Prescription & Fulfillment Portal
 
 <div align="center">
-  <img src="photo_2026-05-23_12-34-55.jpg" alt="TENA CARE LOGO" width="200">
-</div>
-<b>Supporting Mental Well-Being in Healthcare</b>
-As people reach older age health related problems become a major challenge and our app is gonna help them manage their prescriptions.
 
-TenaCare is a web platform that eliminates the dangers of unreadable medical handwriting, lost/mishandeled prescriptions, and the exhausting struggle of "medication hunting" across cities. By digitizing the end-to-end pharmaceutical lifecycle, FlipCare bridges the gap between clinical prescription issuance and home-delivery fulfillment.
+![Tena Care logo](./public/tena-care-logo.png)
 
-## Programming Features Used 
+**Smart care starts here**
 
-* Frontend: TypeScript
-* Backend: Nodejs
-* Database: FireBase
-
----
-
-## 🚀 Key Advantages & Core Features
-
-<div align="center">
-  <img src="photo_2026-05-23_11-55-03.jpg" alt="FAYDA ID Verification" width="300">
 </div>
 
-* National Fayda ID Sync: Patients use their unique Fayda ID card numbers to instantly pull, verify, and fill their active electronic prescriptions at any participating hospital node or pharmacy hub in Ethiopia.
-* Cognitive & Behavioral Health Safeguards: Built directly for vulnerable or disabled users (such as individuals managing Alzheimer's, Dementia, or advanced cognitive issues) who cannot interact with technology effectively. The portal allows credentialed doctors to act on their behalf, securely routing orders straight to fulfillment channels.
-* Smart Caregiver Alarm & Reminder System: When a critical behavioral or maintenance medication is ready for pickup or due for home delivery, the system triggers real-time data syncs and automated, high-visibility visual alert indicators to keep primary family caregivers synchronized.
-* Instant Real-Time Sync Loop: When a doctor clicks the "Send Prescription" button, the order bypasses slow traditional channels, broadcasting to the dispensary dashboard pipeline in under a second without a page refresh.
+Supporting mental well-being in healthcare. Tena Care helps patients and caregivers manage prescriptions, doctor-issued schedules, medication reminders, and Fayda-linked identity — especially for older adults and those managing Alzheimer's, dementia, or cognitive challenges.
+
+## Screenshots
+
+| Logo | Patient login (Fayda) |
+|------|------------------------|
+| ![Tena Care](./image.png) | ![Patient login](./image%20copy.png) |
+
+Production assets also live in [`public/tena-care-logo.png`](./public/tena-care-logo.png) and [`public/patient-login-screen.png`](./public/patient-login-screen.png).
 
 ---
 
-## 📱 The 4-Interface System Architecture
+## Run locally
 
-FlipCare separates its professional boundaries into four dedicated, secure dashboard routes, all communicating dynamically via a shared browser data memory engine:
+```bash
+pnpm install
+pnpm dev
+```
 
-1. The Doctor Portal : A streamlined clinical dashboard featuring an intake matrix and a Clinical Drug Catalog. Doctors can securely input patient data, match it with a Fayda ID, and issue prescriptions for disabled users who cannot handle technology.
-2. The Pharmacist Terminal : A high-velocity dispensary queue interface where pharmacists track incoming Prescriptions, check real-time stock parameters, and actively provide the confirmed prescribed medicine to users : Pending Verification ➔ Preparing ➔ Confirmed/Delivered.
-3. The Central Administrative Panel : An independent system audit core reserved for government official and medical network supervisors to track the proper usage of the Fayda Id Verification, calculate average preparation velocity, review regional demand, and handle data compliance.
-4. The Patient Prescription Tracking Portal: A customer-facing module designed for tracking active prescribed medication, checking baseline pricing catalogs, and tracking the scheduling arrangements for their medicines as well as alarm systems that notify them to take their medicines on time.
+Open **http://localhost:5173**
+
+| Portal | URL | Demo |
+|--------|-----|------|
+| **Patient** | `/patient/login` | Fayda FIN e.g. `123456789012` |
+| **Doctor** | `/doctor/login` | `doctor@tanecare.et` / `doctor123` |
+| **Pharmacy** | `/pharmacy/login` | `pharmacy@tanecare.et` / `pharmacy123` |
+| **Admin** | `/admin/login` | `admin@tanecare.et` / `admin123` |
+
+API + SQLite (optional): `pnpm dev:all` · database file `server/tanecare.db`
 
 ---
 
-## 💻 How the Code Works
+## Stack
 
-* The Array Contract Layer (`types.ts`): Written strictly in TypeScript to define structural object layouts for Patient Demographics, Specialty Category tracking, and Prescription Workflow States to eliminate application runtime bugs.
-* LocalStorage System Memory (`app.ts`): Emulates a persistent, stateful backend database entirely client-side. This ensures absolute offline presentation resilience during live judging with zero risk of server timeouts or data loss on a page refresh.
-* Dynamic DOM UI Painting (`app.js`): The script dynamically samples the local browser storage memory volumes and automatically handles real-time element injection, painting clear data rows and warning indicators directly onto the active screen view.
+| Layer | Tech |
+|-------|------|
+| Frontend | React 18, TypeScript, Vite, Tailwind 4 |
+| Backend | Node.js, Express |
+| Database | SQLite (`better-sqlite3`) |
+| Auth | Fayda FIN (patients), staff email/password |
+
+Default mode uses **in-memory mock data** (no server required). Set `VITE_USE_API=true` for the live API.
+
+---
+
+## Key features
+
+- **Fayda National ID** — patient sign-in and lookup across doctor, pharmacy, and admin portals
+- **Doctor portal** — EHR notes, digital prescriptions, course length (days), dose times
+- **Pharmacy portal** — fulfill prescriptions by Fayda ID
+- **Patient app** — meds, schedule with alarms, profile, **SOS emergency** (demo)
+- **Admin** — patients, prescriptions, staff overview
+
+---
+
+## Four-interface architecture
+
+1. **Doctor** — prescribe, patient lookup, health records  
+2. **Pharmacy** — dispense queue by Fayda ID  
+3. **Admin** — platform oversight and analytics  
+4. **Patient** — prescriptions, reminders, SOS, caregiver sync  
+
+---
+
+## Repository
+
+https://github.com/royalsecond3-droid/Pharma

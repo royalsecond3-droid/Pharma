@@ -276,7 +276,7 @@ const STAFF_MOCK: StaffProfile[] = [
     email: "admin@tanecare.et",
     role: "admin",
     fullName: "System Administrator",
-    facilityName: "Tane Care HQ",
+    facilityName: "Tena Care HQ",
     licenseId: "ADM-001",
   },
   {

@@ -21,7 +21,7 @@ export function AdminPatientsPage() {
       <div>
         <h1 className="text-2xl font-bold text-foreground">Patient registry</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {patients.length} patients in Tane Care · Fayda-linked records
+          {patients.length} patients in Tena Care · Fayda-linked records
         </p>
       </div>
 

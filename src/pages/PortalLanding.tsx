@@ -8,7 +8,7 @@ import {
   User,
 } from "lucide-react";
 import { Link } from "react-router";
-import { APP_NAME, APP_TAGLINE } from "@/lib/brand";
+import { APP_NAME, APP_TAGLINE, LOGO_SRC } from "@/lib/brand";
 
 const PORTALS = [
   {
@@ -51,6 +51,11 @@ export function PortalLanding() {
         }}
       >
         <div className="mx-auto flex max-w-3xl flex-col items-center">
+          <img
+            src={LOGO_SRC}
+            alt={`${APP_NAME} logo`}
+            className="mb-4 h-24 w-24 rounded-2xl object-cover shadow-lg"
+          />
           <div className="mb-4 flex items-center gap-2 rounded-full bg-white/20 px-4 py-1.5 text-xs font-semibold backdrop-blur">
             <Brain size={14} />
             Mental Health · Alzheimer&apos;s Care · Fayda ID

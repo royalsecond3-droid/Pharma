@@ -28,7 +28,7 @@ export function AdminDashboard() {
     <div>
       <h1 className="text-2xl font-bold text-foreground">Platform overview</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Tane Care Fayda-linked health ecosystem
+        Tena Care Fayda-linked health ecosystem
       </p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

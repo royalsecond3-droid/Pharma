@@ -541,5 +541,5 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Tane Care API running at http://localhost:${PORT}`);
+  console.log(`Tena Care API running at http://localhost:${PORT}`);
 });

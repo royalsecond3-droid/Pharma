@@ -30,7 +30,7 @@ export function sendSosAlert(payload: {
     payload.caregiverPhone
       ? `Caregiver · ${payload.caregiverPhone}`
       : "Registered caregiver",
-    "Tane Care response team (demo)",
+    "Tena Care response team (demo)",
   ];
   const alert: SosAlert = {
     id: Date.now(),

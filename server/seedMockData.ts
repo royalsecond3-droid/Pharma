@@ -125,7 +125,7 @@ function seedPatientExtras(
       user_id, hospital, medication, dosage, schedule, start_date, end_date,
       status, icon, color, issued_by, fulfillment_status, doctor_notes,
       dispensed_by, dispensed_at
-    ) VALUES (?, ?, ?, ?, 'As directed', 'Jan 1, 2025', 'Dec 31, 2025', ?, ?, ?, ?, ?, 'Issued via Tane Care', ?, ?)
+    ) VALUES (?, ?, ?, ?, 'As directed', 'Jan 1, 2025', 'Dec 31, 2025', ?, ?, ?, ?, ?, 'Issued via Tena Care', ?, ?)
   `);
 
   for (const [med, dose, sched, status, fulfill, icon, color] of t.rx) {

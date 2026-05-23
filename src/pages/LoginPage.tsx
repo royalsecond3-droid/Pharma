@@ -18,7 +18,7 @@ import {
   isValidFin,
   normalizeFin,
 } from "@/lib/fayda";
-import { APP_NAME } from "@/lib/brand";
+import { APP_NAME, LOGO_SRC } from "@/lib/brand";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -78,23 +78,19 @@ export function LoginPage() {
             borderRadius: "0 0 36px 36px",
           }}
         >
-          <div className="mb-3 flex items-center gap-3">
-            <div
+          <div className="mb-3 flex flex-col items-center gap-2">
+            <img
+              src={LOGO_SRC}
+              alt={`${APP_NAME} logo`}
               style={{
-                width: 52,
-                height: 52,
-                borderRadius: 16,
-                background: "rgba(255,255,255,0.2)",
-                backdropFilter: "blur(12px)",
-                border: "1.5px solid rgba(255,255,255,0.4)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                width: 88,
+                height: 88,
+                borderRadius: 20,
+                objectFit: "cover",
+                boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
               }}
-            >
-              <Stethoscope size={26} color="#fff" />
-            </div>
-            <div>
+            />
+            <div style={{ textAlign: "center" }}>
               <div
                 style={{
                   color: "#fff",
@@ -112,7 +108,7 @@ export function LoginPage() {
                   fontWeight: 500,
                 }}
               >
-                Patient app
+                Patient Portal
               </div>
             </div>
           </div>

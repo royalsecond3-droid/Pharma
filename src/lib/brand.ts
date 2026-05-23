@@ -1,2 +1,3 @@
-export const APP_NAME = "Tane Care";
-export const APP_TAGLINE = "Fayda-linked digital health & medication care";
+export const APP_NAME = "Tena Care";
+export const APP_TAGLINE = "Smart care starts here";
+export const LOGO_SRC = "/tena-care-logo.png";

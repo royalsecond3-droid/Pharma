@@ -179,7 +179,7 @@ export function ProfilePage() {
         <Shield size={14} color="#5A7399" style={{ flexShrink: 0, marginTop: 2 }} />
         <p style={{ fontSize: 11, color: "#5A7399", lineHeight: 1.5, margin: 0 }}>
           Your account is linked to Fayda National ID. Prescriptions and schedules
-          are stored securely in the Tane Care database.
+          are stored securely in the Tena Care database.
         </p>
       </div>
 

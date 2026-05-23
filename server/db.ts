@@ -125,7 +125,7 @@ function seedStaff() {
     "admin123",
     "admin",
     "System Administrator",
-    "Tane Care HQ",
+    "Tena Care HQ",
     "ADM-001",
   );
   insert.run(
