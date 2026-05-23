@@ -1,81 +1,61 @@
-# Tena Care
+# TenaCare — Digital Medical Prescription & Fulfillment Portal
 
 <div align="center">
-
-![Tena Care logo](./public/tena-care-logo.png)
-
-### Smart care starts here
-
-**Digital medical prescription & fulfillment · Fayda-linked · Built for mental health & Alzheimer’s care**
-
-[![Repository](https://img.shields.io/badge/GitHub-royalsecond3--droid%2FPharma-1D6FE8?style=flat-square&logo=github)](https://github.com/royalsecond3-droid/Pharma)
-
+  <img src="./public/tena-care-logo.png" alt="TENA CARE LOGO" width="200">
 </div>
 
----
+**Supporting Mental Well-Being in Healthcare**
 
-## About
+As people reach older age, health-related problems become a major challenge — and our app helps them manage their prescriptions.
 
-**Tena Care** is a web platform that connects patients, doctors, pharmacies, and administrators through Ethiopia’s **Fayda National Digital ID**. It reduces prescription errors from handwriting, lost paper scripts, and “medication hunting” across cities by digitizing the full flow from clinical prescribing to pharmacy fulfillment.
-
-The product is designed for **older adults** and people with **Alzheimer’s, dementia, or cognitive challenges** — including workflows where doctors and caregivers act on a patient’s behalf while the patient uses simple reminders, schedules, and **SOS** tools.
+**TenaCare** is a web platform that eliminates the dangers of unreadable medical handwriting, lost/mishandled prescriptions, and the exhausting struggle of "medication hunting" across cities. By digitizing the end-to-end pharmaceutical lifecycle, **TenaCare** bridges the gap between clinical prescription issuance and pharmacy fulfillment (with home-delivery workflows planned).
 
 ---
 
-## Screenshots
+## Programming Features Used
 
-| Brand | Patient login (Fayda) |
-|:-----:|:---------------------:|
-| ![Tena Care logo](./image.png) | ![Fayda patient login](./image%20copy.png) |
-
----
-
-## Quick start
-
-```bash
-pnpm install
-pnpm dev
-```
-
-Open **http://localhost:5173** — the app runs with **built-in mock data** (no API required).
-
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Frontend only (mock mode) |
-| `pnpm dev:all` | Frontend + API on port `3001` |
-| `pnpm build` | Production build |
-| `pnpm preview` | Preview production build |
-
-**Live API mode** (optional):
-
-```bash
-VITE_USE_API=true pnpm dev:all
-```
-
-Reset SQLite seed data:
-
-```bash
-rm -f server/tanecare.db && pnpm dev:all
-```
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | TypeScript, React 18, Vite, Tailwind CSS |
+| **Backend** | Node.js, Express |
+| **Database** | SQLite (`better-sqlite3`) + browser mock store for offline demos |
 
 ---
 
-## Portals & demo access
+## Key Advantages & Core Features
 
-| Portal | URL | How to sign in |
-|--------|-----|----------------|
-| **Landing** | `/` | Choose a portal |
-| **Patient** | `/patient/login` | Fayda FIN (12+ digits) — see table below |
-| **Doctor** | `/doctor/login` | `doctor@tanecare.et` / `doctor123` |
-| **Pharmacy** | `/pharmacy/login` | `pharmacy@tanecare.et` / `pharmacy123` |
-| **Admin** | `/admin/login` | `admin@tanecare.et` / `admin123` |
+<div align="center">
+  <img src="./public/patient-login-screen.png" alt="FAYDA ID Verification" width="300">
+</div>
 
-Staff portals include **Continue with demo account** for one-click login.
+- **National Fayda ID sync** — Patients use their unique Fayda ID (FIN) to sign in, pull, and verify active electronic prescriptions at participating hospital nodes and pharmacy hubs in Ethiopia.
+- **Cognitive & behavioral health safeguards** — Built for vulnerable users (Alzheimer's, dementia, advanced cognitive issues) who cannot use technology alone. Credentialed doctors act on their behalf and route orders to fulfillment.
+- **Smart caregiver alarm & reminder system** — Doctor-prescribed **course length (days)**, **dose times**, and patient-set alarms keep family caregivers synchronized when medication is due.
+- **Patient SOS (demo)** — Hold-to-alert emergency flow with caregiver quick-call and alert history.
+- **Instant sync loop** — When a doctor issues a prescription, it appears on the pharmacy and patient views without slow paper channels (mock/API mode).
+
+---
+
+## The 4-Interface System Architecture
+
+TenaCare separates professional boundaries into four secure dashboard routes:
+
+1. **Doctor portal** — Clinical dashboard: patient lookup by Fayda ID, EHR notes, digital prescriptions (medication, dosage, schedule, days of therapy, dose times).
+2. **Pharmacist terminal** — Dispensary queue: retrieve Rx by Fayda ID, review doctor notes, mark **Pending → Dispensed**.
+3. **Central administrative panel** — Oversight for supervisors: patient registry, prescription volume, staff accounts, Fayda-linked compliance view.
+4. **Patient prescription tracking portal** — Mobile-first app: active medications, doctor schedule + alarms, profile (Fayda FIN), and SOS.
+
+| Portal | URL | Demo login |
+|--------|-----|------------|
+| Patient | `/patient/login` | Fayda FIN e.g. `123456789012` |
+| Doctor | `/doctor/login` | `doctor@tanecare.et` / `doctor123` |
+| Pharmacy | `/pharmacy/login` | `pharmacy@tanecare.et` / `pharmacy123` |
+| Admin | `/admin/login` | `admin@tanecare.et` / `admin123` |
 
 ### Demo patient Fayda IDs
 
-| FIN | Patient |
-|-----|---------|
+| FIN | Name |
+|-----|------|
 | `123456789012` | Sarah Johnson |
 | `234567890123` | Abebe Tadesse |
 | `345678901234` | Helen Girma |
@@ -87,95 +67,47 @@ Staff portals include **Continue with demo account** for one-click login.
 
 ---
 
-## Features
+## Screenshots
 
-### Patient app (mobile-first)
-
-- **Fayda-only login** — National ID verification (demo)
-- **Home** — active prescriptions overview
-- **Meds** — full prescription list with search & filters
-- **Schedule** — doctor-prescribed course length (days), dose times, and **medication alarms**
-- **SOS** — hold-to-alert caregiver (demo), quick-call links, alert history
-- **Profile** — Fayda FIN, contact info, secure logout
-
-### Doctor portal
-
-- Patient lookup & registry by Fayda ID
-- Digital prescriptions (medication, dosage, **days of therapy**, dose times)
-- Electronic health records (EHR) notes
-- Patient list with prescription counts
-
-### Pharmacy portal
-
-- Lookup patient by Fayda ID
-- View active prescriptions
-- Mark medications as **dispensed**
-
-### Admin portal
-
-- Platform stats (patients, prescriptions, fulfillment)
-- Patient registry
-- All prescriptions & staff accounts
+| Logo | Patient login |
+|------|----------------|
+| ![Tena Care](./image.png) | ![Fayda login](./image%20copy.png) |
 
 ---
 
-## Tech stack
+## Run locally
 
-| Layer | Technology |
-|-------|------------|
-| **Frontend** | React 18, TypeScript, Vite 6, Tailwind CSS 4, React Router 7 |
-| **Backend** | Node.js, Express |
-| **Database** | SQLite (`better-sqlite3`) |
-| **Patient auth** | Fayda FIN |
-| **Staff auth** | Email + password (role: doctor / pharmacy / admin) |
-
-**Mock mode (default):** all data in browser memory + `localStorage` — ideal for demos and judging offline.
-
-**API mode:** set `VITE_USE_API=true` to use the Express API and `server/tanecare.db`.
-
----
-
-## Project structure
-
+```bash
+pnpm install
+pnpm dev
 ```
-├── public/                 # Logo & static assets
-├── server/                 # Express API + SQLite
-│   ├── index.ts
-│   ├── db.ts
-│   └── seedMockData.ts
-├── src/
-│   ├── app/App.tsx         # Routes (4 portals)
-│   ├── api/client.ts       # API + mock switch
-│   ├── data/mockStore.ts   # Demo data
-│   ├── pages/              # Patient, doctor, pharmacy, admin UI
-│   └── components/         # Shared UI (Fayda lookup, SOS, schedule)
-├── image.png               # Logo (README)
-└── image copy.png          # Login UI reference (README)
+
+Open **http://localhost:5173** (mock data — no server required).
+
+```bash
+pnpm dev:all                    # API + frontend
+VITE_USE_API=true pnpm dev:all  # force live API
+rm -f server/tanecare.db && pnpm dev:all   # reset database seed
 ```
 
 ---
 
-## How it works
+## How the Code Works
 
-1. **Doctor** issues a prescription linked to a patient’s Fayda ID (duration in days + daily dose times).
-2. **Pharmacy** retrieves the same ID, verifies Rx, and marks fulfillment.
-3. **Patient** sees meds and sets **alarms** on the prescribed schedule; **SOS** notifies caregivers in demo mode.
-4. **Admin** monitors usage across the network.
+- **Type contract layer (`src/types/index.ts`)** — TypeScript interfaces for patients, prescriptions, staff, alarms, health records, and workflow states to prevent runtime shape bugs.
+- **Mock / persistence layer (`src/data/mockStore.ts`)** — In-memory demo data plus `localStorage` for alarms, SOS history, and profile overrides. Ensures offline resilience during live demos with no server timeout risk on refresh.
+- **API client (`src/api/client.ts`)** — Switches between mock store and Express API when `VITE_USE_API=true`.
+- **React UI (`src/pages/`, `src/components/`)** — Route-based portals (patient, doctor, pharmacy, admin); components render live data from hooks (`useApiData`) and update views when prescriptions or alarms change.
+- **SQLite backend (`server/`)** — Optional persistent database (`server/tanecare.db`) with seeded staff, patients, prescriptions, and health records.
 
 ---
 
 ## Repository
 
-**GitHub:** https://github.com/royalsecond3-droid/Pharma
+**https://github.com/royalsecond3-droid/Pharma**
 
 ```bash
 git clone https://github.com/royalsecond3-droid/Pharma.git
 cd Pharma
 pnpm install && pnpm dev
 ```
-
----
-
-## License
-
-Private / hackathon project — see repository owner for usage terms.
