@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AlertTriangle,
   MapPin,
@@ -9,14 +9,7 @@ import {
 import { Link } from "react-router";
 import { useAuth } from "@/context/AuthContext";
 import { APP_NAME } from "@/lib/brand";
-
-const SOS_STORAGE_KEY = "tanecare_sos_events";
-
-interface SosEvent {
-  at: string;
-  fin: string;
-  patientName: string;
-}
+import { getSosHistory, sendSosAlert, type SosAlert } from "@/lib/sos";
 
 const EMERGENCY_NUMBERS = [
   { label: "Ethiopia Emergency", number: "911", primary: true },
@@ -27,42 +20,27 @@ export function SosPage() {
   const { user, faydaFin } = useAuth();
   const [holding, setHolding] = useState(false);
   const [holdProgress, setHoldProgress] = useState(0);
-  const [alertSent, setAlertSent] = useState(false);
-  const [lastAlert, setLastAlert] = useState<SosEvent | null>(null);
+  const [lastAlert, setLastAlert] = useState<SosAlert | null>(null);
+  const [history, setHistory] = useState<SosAlert[]>([]);
 
   useEffect(() => {
-    if (!faydaFin) return;
-    try {
-      const raw = localStorage.getItem(SOS_STORAGE_KEY);
-      if (!raw) return;
-      const events = JSON.parse(raw) as SosEvent[];
-      const mine = events.filter((e) => e.fin === faydaFin);
-      if (mine.length) setLastAlert(mine[mine.length - 1]);
-    } catch {
-      /* ignore */
-    }
-  }, [faydaFin]);
+    if (faydaFin) setHistory(getSosHistory(faydaFin));
+  }, [faydaFin, lastAlert]);
 
-  const sendSosAlert = useCallback(() => {
+  const caregiverPhone = user?.phone ?? "+251 911 000 000";
+  const caregiverName = "Caregiver / family";
+
+  const triggerSos = () => {
     if (!faydaFin) return;
-    const event: SosEvent = {
-      at: new Date().toISOString(),
+    const alert = sendSosAlert({
       fin: faydaFin,
       patientName: user?.fullName ?? "Patient",
-    };
-    try {
-      const raw = localStorage.getItem(SOS_STORAGE_KEY);
-      const events: SosEvent[] = raw ? JSON.parse(raw) : [];
-      events.push(event);
-      localStorage.setItem(SOS_STORAGE_KEY, JSON.stringify(events.slice(-20)));
-    } catch {
-      /* ignore */
-    }
-    setLastAlert(event);
-    setAlertSent(true);
+      caregiverPhone: user?.phone,
+    });
+    setLastAlert(alert);
     setHolding(false);
     setHoldProgress(0);
-  }, [faydaFin, user?.fullName]);
+  };
 
   useEffect(() => {
     if (!holding) return;
@@ -73,14 +51,11 @@ export function SosPage() {
       setHoldProgress(p);
       if (p >= 100) {
         clearInterval(tick);
-        sendSosAlert();
+        triggerSos();
       }
     }, 50);
     return () => clearInterval(tick);
-  }, [holding, sendSosAlert]);
-
-  const caregiverPhone = user?.phone ?? "+251 911 000 000";
-  const caregiverName = "Caregiver / family";
+  }, [holding]);
 
   return (
     <div className="pb-28">
@@ -104,7 +79,7 @@ export function SosPage() {
         </p>
       </div>
 
-      {alertSent && (
+      {lastAlert && (
         <div
           className="mx-5 mt-4 rounded-2xl p-4"
           style={{ background: "#E0F7EF", border: "1.5px solid #10B98144" }}
@@ -113,10 +88,13 @@ export function SosPage() {
             SOS alert sent (demo)
           </p>
           <p style={{ fontSize: 12, color: "#5A7399", marginTop: 4 }}>
-            Caregiver and emergency contacts would be notified with your location
-            and health summary. In production this connects to SMS, push, and
-            emergency services.
+            {lastAlert.locationNote}
           </p>
+          <ul style={{ marginTop: 8, paddingLeft: 16, fontSize: 11, color: "#5A7399" }}>
+            {lastAlert.contactsNotified.map((c) => (
+              <li key={c}>{c}</li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -124,16 +102,20 @@ export function SosPage() {
         <button
           type="button"
           onPointerDown={() => {
-            setAlertSent(false);
+            setLastAlert(null);
             setHolding(true);
           }}
           onPointerUp={() => {
-            setHolding(false);
-            setHoldProgress(0);
+            if (holdProgress < 100) {
+              setHolding(false);
+              setHoldProgress(0);
+            }
           }}
           onPointerLeave={() => {
-            setHolding(false);
-            setHoldProgress(0);
+            if (holdProgress < 100) {
+              setHolding(false);
+              setHoldProgress(0);
+            }
           }}
           style={{
             width: 200,
@@ -167,19 +149,6 @@ export function SosPage() {
           Release to cancel · Demo mode — no real emergency dispatch
         </p>
       </div>
-
-      {lastAlert && (
-        <p
-          className="mx-5 mt-4 text-center text-xs"
-          style={{ color: "#5A7399" }}
-        >
-          Last alert:{" "}
-          {new Date(lastAlert.at).toLocaleString(undefined, {
-            dateStyle: "medium",
-            timeStyle: "short",
-          })}
-        </p>
-      )}
 
       <div className="mt-6 px-5">
         <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0F1B35", marginBottom: 10 }}>
@@ -250,6 +219,19 @@ export function SosPage() {
           ))}
         </div>
       </div>
+
+      {history.length > 0 && (
+        <div className="mt-6 px-5">
+          <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0F1B35", marginBottom: 8 }}>
+            Recent alerts
+          </h2>
+          {history.slice(0, 3).map((a) => (
+            <p key={a.id} style={{ fontSize: 11, color: "#5A7399", marginBottom: 4 }}>
+              {new Date(a.sentAt).toLocaleString()} — {a.contactsNotified.length} contacts
+            </p>
+          ))}
+        </div>
+      )}
 
       <div
         className="mx-5 mt-6 flex items-start gap-3 rounded-2xl p-4"
