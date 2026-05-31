@@ -3,7 +3,6 @@ import { CheckCircle, ChevronRight, Clock, Crown, MapPin, Pill } from "lucide-re
 import { Link } from "react-router";
 import { api } from "@/api/client";
 import { AppHeader } from "@/components/AppHeader";
-import { PersonalInsightsBlock } from "@/components/aura/PersonalInsightsBlock";
 import { PrescriptionCard } from "@/components/PrescriptionCard";
 import { useAuth } from "@/context/AuthContext";
 import { useApiData } from "@/hooks/useApi";
@@ -99,8 +98,6 @@ export function HomePage() {
           </div>
         ))}
       </div>
-
-      <PersonalInsightsBlock />
 
       <Link
         to="/patient/find"
