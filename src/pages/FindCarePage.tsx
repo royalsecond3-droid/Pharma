@@ -33,6 +33,7 @@ export function FindCarePage() {
   const [payMethod, setPayMethod] = useState<PaymentMethodType>("telebirr");
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
   const [routeActive, setRouteActive] = useState(false);
+  const [labRequesting, setLabRequesting] = useState<string | null>(null);
 
   const selectPlace = (id: string) => {
     setSelectedMapId(id);
@@ -146,10 +147,18 @@ export function FindCarePage() {
           amountEtb: ph.priceEtb,
           medication: med,
           method: payMethod,
+          pharmacyName: ph.name,
         });
       }
       const med =
         ph.medication ?? (showAllMeds ? medications[0] ?? "Medication" : selectedMed);
+      if (!paid) {
+        await api.addUnpaidMedication(fin, {
+          medication: med,
+          amountEtb: ph.priceEtb,
+          pharmacyName: ph.name,
+        });
+      }
       await api.reserveMedication({
         patientFin: fin,
         patientName: user.fullName,
@@ -159,14 +168,40 @@ export function FindCarePage() {
       });
       setMessage(
         paid
-          ? `Paid ${ph.priceEtb} ETB & reserved at ${ph.name}`
-          : `Reservation queued at ${ph.name}`,
+          ? `Pay buy ${ph.priceEtb} ETB & reserved at ${ph.name}`
+          : `Unbuy — reserved at ${ph.name}`,
       );
       setPayModal(null);
     } catch {
       setMessage("Could not complete — try again");
     } finally {
       setReserving(null);
+    }
+  };
+
+  const requestLab = async (facility: {
+    facilityId: string;
+    name: string;
+    city: string;
+    priceEtb: number;
+    etaLabel: string;
+  }) => {
+    if (!fin) return;
+    setLabRequesting(facility.facilityId);
+    setMessage(null);
+    try {
+      await api.createLabEquipmentRequest(fin, {
+        equipment,
+        facilityName: facility.name,
+        city: facility.city,
+        priceEtb: facility.priceEtb,
+        etaLabel: facility.etaLabel,
+      });
+      setMessage(`Lab request: ${equipment} at ${facility.name}`);
+    } catch {
+      setMessage("Could not save lab request");
+    } finally {
+      setLabRequesting(null);
     }
   };
 
@@ -383,6 +418,10 @@ export function FindCarePage() {
                   ))}
                 </select>
 
+                {message && tab === "lab" && (
+                  <p className="mt-3 text-sm font-medium text-[#10B981]">{message}</p>
+                )}
+
                 {labResult?.safetyNotice && (
                   <div
                     className="mt-4 rounded-xl border px-3 py-3 text-sm"
@@ -407,14 +446,24 @@ export function FindCarePage() {
                         {f.etaLabel} · {f.distanceKm.toFixed(1)} km · {f.priceEtb.toLocaleString()}{" "}
                         ETB
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => startRoute(f.facilityId)}
-                        className="mt-2 rounded-md px-3 py-1.5 text-xs font-semibold text-white"
-                        style={{ background: "#1D6FE8" }}
-                      >
-                        Start
-                      </button>
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => startRoute(f.facilityId)}
+                          className="rounded-md px-3 py-1.5 text-xs font-semibold text-white"
+                          style={{ background: "#1D6FE8" }}
+                        >
+                          Start
+                        </button>
+                        <button
+                          type="button"
+                          disabled={labRequesting === f.facilityId}
+                          onClick={() => requestLab(f)}
+                          className="rounded-md border border-[#1D6FE8] px-3 py-1.5 text-xs font-semibold text-[#1D6FE8]"
+                        >
+                          {labRequesting === f.facilityId ? "…" : "Request"}
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

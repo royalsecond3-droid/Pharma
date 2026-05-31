@@ -1,126 +1,175 @@
-import { useMemo, useState } from "react";
-import { MapPin, Search } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { api } from "@/api/client";
-import { PrescriptionCard } from "@/components/PrescriptionCard";
-import { useApiData } from "@/hooks/useApi";
-import type { PrescriptionStatus } from "@/types";
+import { MedicationSupplyCard } from "@/components/meds/MedicationSupplyCard";
+import { useAuth } from "@/context/AuthContext";
+import type { LabEquipmentRequest } from "@/types/aura";
+import type { MedicationSupplyItem } from "@/types/medicationSupply";
+import type { Prescription } from "@/types";
 
-type FilterTab = "all" | PrescriptionStatus;
+type Tab = "drugs" | "lab" | "unbuy" | "paybuy";
 
-export function MedsPage() {
-  const [activeTab, setActiveTab] = useState<FilterTab>("all");
-  const [search, setSearch] = useState("");
-
-  const fetcher = useMemo(
-    () => (fin: string) =>
-      api.getPrescriptions(fin, {
-        status: activeTab,
-        search: search.trim() || undefined,
-      }),
-    [activeTab, search],
-  );
-
-  const { data, loading, error } = useApiData(fetcher, [activeTab, search]);
-  const prescriptions = data?.prescriptions ?? [];
-
+function DrugRow({
+  rx,
+  buyStatus,
+}: {
+  rx: Prescription;
+  buyStatus?: "paybuy" | "unbuy";
+}) {
   return (
-    <div className="pb-6">
-      <div className="px-5 pt-5">
-        <h1
-          style={{
-            fontSize: 20,
-            fontWeight: 700,
-            color: "#0F1B35",
-            letterSpacing: -0.3,
-            marginBottom: 4,
-          }}
-        >
-          My Medications
-        </h1>
-        <p style={{ fontSize: 12, color: "#5A7399", marginBottom: 12 }}>
-          All prescriptions linked to your Fayda ID
-        </p>
-        <Link
-          to="/patient/find"
-          className="mb-4 flex items-center gap-2 rounded-lg border border-[#E8EEF5] bg-white px-3 py-2.5 text-sm font-medium text-[#1D6FE8] no-underline"
-        >
-          <MapPin size={16} />
-          Show all medications on map
-        </Link>
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            background: "#fff",
-            borderRadius: 14,
-            padding: "12px 16px",
-            boxShadow: "0 2px 12px rgba(29,111,232,0.08)",
-            border: "1.5px solid rgba(29,111,232,0.08)",
-            marginBottom: 16,
-          }}
-        >
-          <Search size={16} color="#5A7399" />
-          <input
-            type="search"
-            placeholder="Search medications..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{
-              flex: 1,
-              background: "none",
-              border: "none",
-              outline: "none",
-              fontSize: 13,
-              color: "#0F1B35",
-            }}
-          />
-        </div>
-
-        <div className="mb-4 flex gap-2">
-          {(["all", "active", "completed"] as const).map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setActiveTab(tab)}
-              style={{
-                padding: "7px 14px",
-                borderRadius: 20,
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: "pointer",
-                background:
-                  activeTab === tab
-                    ? "linear-gradient(135deg, #1D6FE8, #0FB8C3)"
-                    : "#fff",
-                color: activeTab === tab ? "#fff" : "#5A7399",
-                border:
-                  activeTab === tab ? "none" : "1.5px solid rgba(29,111,232,0.15)",
-              }}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
+    <div className="flex items-center gap-3 border-b border-[#E8EEF5] py-3 last:border-0">
+      <span className="text-xl">{rx.icon}</span>
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-semibold text-[#0F1B35]">{rx.medication}</div>
+        <div className="text-xs text-[#5A7399]">
+          {rx.dosage} · {rx.schedule}
         </div>
       </div>
+      {buyStatus === "paybuy" ? (
+        <span className="text-xs font-semibold text-[#10B981]">Pay buy</span>
+      ) : buyStatus === "unbuy" ? (
+        <Link to="/patient/find" className="text-xs font-semibold text-[#D97706] no-underline">
+          Unbuy
+        </Link>
+      ) : (
+        <span className="text-xs text-[#5A7399]">
+          {rx.status === "active" ? "Active" : "Done"}
+        </span>
+      )}
+    </div>
+  );
+}
 
-      <div className="flex flex-col gap-3 px-5">
+function LabRow({ req }: { req: LabEquipmentRequest }) {
+  const booked = req.status === "booked";
+  return (
+    <div className="flex items-center gap-3 border-b border-[#E8EEF5] py-3 last:border-0">
+      <span className="text-xl">🔬</span>
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-semibold text-[#0F1B35]">{req.equipment}</div>
+        <div className="text-xs text-[#5A7399]">{req.facilityName}</div>
+      </div>
+      <span
+        className="text-xs font-semibold"
+        style={{ color: booked ? "#10B981" : "#1D6FE8" }}
+      >
+        {booked ? "Booked" : "Requested"}
+      </span>
+    </div>
+  );
+}
+
+export function MedsPage() {
+  const { faydaFin } = useAuth();
+  const [tab, setTab] = useState<Tab>("drugs");
+  const [supplyPaid, setSupplyPaid] = useState<MedicationSupplyItem[]>([]);
+  const [supplyUnpaid, setSupplyUnpaid] = useState<MedicationSupplyItem[]>([]);
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
+  const [labRequests, setLabRequests] = useState<LabEquipmentRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!faydaFin) return;
+    setLoading(true);
+    Promise.all([
+      api.getMedicationSupply(faydaFin),
+      api.getPrescriptions(faydaFin),
+      api.getLabEquipmentRequests(faydaFin),
+    ])
+      .then(([supply, rx, lab]) => {
+        setSupplyPaid(supply.supply.paid);
+        setSupplyUnpaid(supply.supply.unpaid);
+        setPrescriptions(rx.prescriptions);
+        setLabRequests(lab.requests);
+      })
+      .finally(() => setLoading(false));
+  }, [faydaFin]);
+
+  const statusByMed = useMemo(() => {
+    const map = new Map<string, "paybuy" | "unbuy">();
+    for (const i of supplyPaid) {
+      map.set(i.medication.toLowerCase(), "paybuy");
+    }
+    for (const i of supplyUnpaid) {
+      if (!map.has(i.medication.toLowerCase())) {
+        map.set(i.medication.toLowerCase(), "unbuy");
+      }
+    }
+    return map;
+  }, [supplyPaid, supplyUnpaid]);
+
+  const tabs = [
+    { id: "drugs" as const, label: "Drugs" },
+    { id: "lab" as const, label: "Lab" },
+    { id: "unbuy" as const, label: "Unbuy" },
+    { id: "paybuy" as const, label: "Pay buy" },
+  ];
+
+  return (
+    <div className="px-5 pb-6 pt-5">
+      <h1 className="text-xl font-bold text-[#0F1B35]">My Medications</h1>
+
+      <Link
+        to="/patient/find"
+        className="mt-3 mb-4 block text-sm font-medium text-[#1D6FE8] no-underline"
+      >
+        Find on map →
+      </Link>
+
+      <div className="mb-4 flex rounded-xl bg-[#F4F8FF] p-1">
+        {tabs.map(({ id, label }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setTab(id)}
+            className="flex-1 rounded-lg py-2 text-[11px] font-semibold transition-colors sm:text-xs"
+            style={{
+              background: tab === id ? "#fff" : "transparent",
+              color: tab === id ? "#1D6FE8" : "#5A7399",
+              boxShadow: tab === id ? "0 1px 6px rgba(29,111,232,0.12)" : "none",
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div className="rounded-2xl bg-white px-4 shadow-sm ring-1 ring-[rgba(29,111,232,0.08)]">
         {loading ? (
-          <p className="py-8 text-center text-sm" style={{ color: "#5A7399" }}>
-            Loading…
-          </p>
-        ) : error ? (
-          <p className="py-8 text-center text-sm" style={{ color: "#E53E3E" }}>
-            {error}
-          </p>
-        ) : prescriptions.length === 0 ? (
-          <p className="py-8 text-center text-sm" style={{ color: "#5A7399" }}>
-            No prescriptions match your filters.
-          </p>
+          <p className="py-8 text-center text-sm text-[#5A7399]">Loading…</p>
+        ) : tab === "drugs" ? (
+          prescriptions.length === 0 ? (
+            <p className="py-8 text-center text-sm text-[#5A7399]">No medications yet</p>
+          ) : (
+            prescriptions.map((rx) => (
+              <DrugRow
+                key={rx.id}
+                rx={rx}
+                buyStatus={statusByMed.get(rx.medication.toLowerCase())}
+              />
+            ))
+          )
+        ) : tab === "lab" ? (
+          labRequests.length === 0 ? (
+            <p className="py-8 text-center text-sm text-[#5A7399]">
+              No lab requests —{" "}
+              <Link to="/patient/find" className="text-[#1D6FE8] no-underline">
+                request in Find Care
+              </Link>
+            </p>
+          ) : (
+            labRequests.map((req) => <LabRow key={req.id} req={req} />)
+          )
+        ) : tab === "unbuy" ? (
+          supplyUnpaid.length === 0 ? (
+            <p className="py-8 text-center text-sm text-[#5A7399]">Nothing to unbuy</p>
+          ) : (
+            supplyUnpaid.map((item) => <MedicationSupplyCard key={item.id} item={item} />)
+          )
+        ) : supplyPaid.length === 0 ? (
+          <p className="py-8 text-center text-sm text-[#5A7399]">No pay buy yet</p>
         ) : (
-          prescriptions.map((rx) => <PrescriptionCard key={rx.id} rx={rx} />)
+          supplyPaid.map((item) => <MedicationSupplyCard key={item.id} item={item} />)
         )}
       </div>
     </div>

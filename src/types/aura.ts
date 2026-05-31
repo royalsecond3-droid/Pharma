@@ -117,6 +117,18 @@ export interface EquipmentAllocationResult {
   }[];
 }
 
+export interface LabEquipmentRequest {
+  id: string;
+  fin: string;
+  equipment: string;
+  facilityName: string;
+  city: string;
+  priceEtb: number;
+  status: "requested" | "booked";
+  etaLabel?: string;
+  createdAt: string;
+}
+
 export interface PharmacyReservation {
   id: number;
   patientFin: string;

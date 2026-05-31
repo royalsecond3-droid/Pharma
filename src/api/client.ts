@@ -1,5 +1,6 @@
 import { mockStore } from "@/data/mockStore";
 import { auraService } from "@/services/auraService";
+import { medicationSupplyService } from "@/services/medicationSupplyService";
 import { subscriptionService } from "@/services/subscriptionService";
 import type {
   AdminStats,
@@ -12,8 +13,10 @@ import type {
   StaffRole,
   UserProfile,
 } from "@/types";
+import { labRequestService } from "@/services/labRequestService";
 import type {
   EquipmentAllocationResult,
+  LabEquipmentRequest,
   PharmacyReservation,
   RecordSource,
   VitalsMetrics,
@@ -316,6 +319,27 @@ export const api = {
     } satisfies { result: EquipmentAllocationResult });
   },
 
+  getLabEquipmentRequests(fin: string) {
+    return Promise.resolve({
+      requests: labRequestService.list(fin),
+    } satisfies { requests: LabEquipmentRequest[] });
+  },
+
+  createLabEquipmentRequest(
+    fin: string,
+    data: {
+      equipment: string;
+      facilityName: string;
+      city: string;
+      priceEtb: number;
+      etaLabel?: string;
+    },
+  ) {
+    return Promise.resolve({
+      request: labRequestService.create(fin, data),
+    });
+  },
+
   reserveMedication(data: {
     patientFin: string;
     patientName: string;
@@ -370,11 +394,36 @@ export const api = {
     return Promise.resolve({ subscription: subscriptionService.cancelSubscription(fin) });
   },
 
+  getMedicationSupply(fin: string) {
+    return Promise.resolve({ supply: medicationSupplyService.getSummary(fin) });
+  },
+
+  addUnpaidMedication(
+    fin: string,
+    data: { medication: string; amountEtb: number; pharmacyName: string },
+  ) {
+    return Promise.resolve({
+      item: medicationSupplyService.addUnpaid(fin, data),
+    });
+  },
+
   payPharmacyOrder(
     fin: string,
-    data: { amountEtb: number; medication: string; method: PaymentMethodType },
+    data: {
+      amountEtb: number;
+      medication: string;
+      method: PaymentMethodType;
+      pharmacyName?: string;
+    },
   ) {
-    return Promise.resolve({ transaction: subscriptionService.payReservation(fin, data) });
+    const tx = subscriptionService.payReservation(fin, data);
+    medicationSupplyService.markPaid(fin, {
+      medication: data.medication,
+      amountEtb: data.amountEtb,
+      pharmacyName: data.pharmacyName,
+      receiptRef: tx.receiptRef,
+    });
+    return Promise.resolve({ transaction: tx });
   },
 
   getAdminSubscriptionRevenue() {

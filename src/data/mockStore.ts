@@ -385,6 +385,11 @@ export const mockStore = {
     });
   },
 
+  /** Synchronous list for supply/payment helpers (mock mode). */
+  listPrescriptionsSync(fin: string) {
+    return getPrescriptions(fin);
+  },
+
   getPrescriptions(fin: string, params?: { status?: PrescriptionStatus | "all"; search?: string }) {
     let list = getPrescriptions(fin);
     if (params?.status && params.status !== "all") {
