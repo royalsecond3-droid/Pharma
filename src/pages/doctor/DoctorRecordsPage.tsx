@@ -10,6 +10,10 @@ export function DoctorRecordsPage() {
   const [chiefComplaint, setChiefComplaint] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
   const [notes, setNotes] = useState("");
+  const [systolic, setSystolic] = useState("");
+  const [diastolic, setDiastolic] = useState("");
+  const [heartRate, setHeartRate] = useState("");
+  const [contraTags, setContraTags] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -25,10 +29,31 @@ export function DoctorRecordsPage() {
         diagnosis: diagnosis || undefined,
         notes,
       });
-      setMessage("Health record saved to EHR");
+      const auraResult = await api.addMedicalLog(patientFin, {
+        source: "manual_form",
+        metrics: {
+          systolic: systolic ? Number(systolic) : undefined,
+          diastolic: diastolic ? Number(diastolic) : undefined,
+          heartRate: heartRate ? Number(heartRate) : undefined,
+        },
+        condition: diagnosis || chiefComplaint || "Clinical visit",
+        facilityId: staff.facilityName.replace(/\s+/g, "-").toLowerCase().slice(0, 24) || "hosp-addis-01",
+        contraindicationTags: contraTags
+          ? contraTags.split(",").map((t) => t.trim().toLowerCase())
+          : [],
+      });
+      if (auraResult.duplicate) {
+        setMessage("Duplicate entry blocked — identical timestamp & condition exists");
+        return;
+      }
+      setMessage("Health record saved · vitals analyzed for patient insights");
       setChiefComplaint("");
       setDiagnosis("");
       setNotes("");
+      setSystolic("");
+      setDiastolic("");
+      setHeartRate("");
+      setContraTags("");
     } catch (e) {
       setMessage(e instanceof Error ? e.message : "Failed to save record");
     } finally {
@@ -68,6 +93,55 @@ export function DoctorRecordsPage() {
               value={diagnosis}
               onChange={(e) => setDiagnosis(e.target.value)}
               placeholder="e.g. Alzheimer's disease — early stage"
+              className="mt-1 w-full rounded-xl border border-border px-4 py-2.5 text-sm"
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs font-semibold uppercase text-muted-foreground">
+                Systolic
+              </label>
+              <input
+                type="number"
+                value={systolic}
+                onChange={(e) => setSystolic(e.target.value)}
+                placeholder="120"
+                className="mt-1 w-full rounded-xl border border-border px-3 py-2.5 text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold uppercase text-muted-foreground">
+                Diastolic
+              </label>
+              <input
+                type="number"
+                value={diastolic}
+                onChange={(e) => setDiastolic(e.target.value)}
+                placeholder="80"
+                className="mt-1 w-full rounded-xl border border-border px-3 py-2.5 text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold uppercase text-muted-foreground">
+                Heart rate
+              </label>
+              <input
+                type="number"
+                value={heartRate}
+                onChange={(e) => setHeartRate(e.target.value)}
+                placeholder="72"
+                className="mt-1 w-full rounded-xl border border-border px-3 py-2.5 text-sm"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-semibold uppercase text-muted-foreground">
+              Safety flags (comma-separated, e.g. pacemaker)
+            </label>
+            <input
+              value={contraTags}
+              onChange={(e) => setContraTags(e.target.value)}
+              placeholder="pacemaker, metallic implant"
               className="mt-1 w-full rounded-xl border border-border px-4 py-2.5 text-sm"
             />
           </div>

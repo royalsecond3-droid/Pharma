@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
-import { IdCard, LogOut, Shield, User } from "lucide-react";
+import { Crown, IdCard, LogOut, Shield, User } from "lucide-react";
+import { ProBadge } from "@/components/subscription/ProBadge";
+import { isProAccount } from "@/lib/subscriptionDisplay";
+import { Link } from "react-router";
 import { useNavigate } from "react-router";
 import { api } from "@/api/client";
 import { useAuth } from "@/context/AuthContext";
 import { formatFinDisplay } from "@/lib/fayda";
+import { SUBSCRIPTION_PLANS } from "@/data/subscriptionPlans";
+import type { SubscriptionPlanId } from "@/types/subscription";
 
 export function ProfilePage() {
   const navigate = useNavigate();
@@ -13,6 +18,13 @@ export function ProfilePage() {
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [planId, setPlanId] = useState<SubscriptionPlanId>("free");
+
+  useEffect(() => {
+    if (faydaFin) {
+      api.getSubscription(faydaFin).then((r) => setPlanId(r.subscription.planId));
+    }
+  }, [faydaFin]);
 
   useEffect(() => {
     if (user) {
@@ -70,8 +82,13 @@ export function ProfilePage() {
         >
           <User size={36} color="#fff" />
         </div>
-        <div style={{ color: "#fff", fontSize: 18, fontWeight: 700 }}>
-          {user?.fullName ?? "Patient"}
+        <div className="flex flex-col items-center gap-2">
+          <div style={{ color: "#fff", fontSize: 18, fontWeight: 700 }}>
+            {user?.fullName ?? "Patient"}
+          </div>
+          {isProAccount(planId) && (
+            <ProBadge planId={planId} size="md" showPlanName />
+          )}
         </div>
         {faydaFin && (
           <div
@@ -86,6 +103,33 @@ export function ProfilePage() {
           </div>
         )}
       </div>
+
+      <Link
+        to="/patient/subscription"
+        className="mx-5 mt-4 flex items-center gap-3 rounded-2xl p-4 no-underline"
+        style={{
+          background: "linear-gradient(135deg, #6C63FF 0%, #1D6FE8 100%)",
+          boxShadow: "0 8px 24px rgba(108,99,255,0.25)",
+        }}
+      >
+        <div
+          className="flex h-12 w-12 items-center justify-center rounded-xl"
+          style={{ background: "rgba(255,255,255,0.2)" }}
+        >
+          <Crown size={24} color="#fff" />
+        </div>
+        <div className="flex-1 text-white">
+          <div className="text-sm font-bold">
+            {SUBSCRIPTION_PLANS.find((p) => p.id === planId)?.name ?? "Aura Free"}
+          </div>
+          <div className="text-xs opacity-90">
+            {planId === "family"
+              ? "Family Core · 4 linked profiles · annual billing"
+              : "Manage subscription · Pay with Telebirr, CBE, Chapa"}
+          </div>
+        </div>
+        <span className="text-xs font-bold text-white">Upgrade →</span>
+      </Link>
 
       <form
         onSubmit={handleSave}
@@ -178,8 +222,8 @@ export function ProfilePage() {
       >
         <Shield size={14} color="#5A7399" style={{ flexShrink: 0, marginTop: 2 }} />
         <p style={{ fontSize: 11, color: "#5A7399", lineHeight: 1.5, margin: 0 }}>
-          Your account is linked to Fayda National ID. Prescriptions and schedules
-          are stored securely in the Tena Care database.
+          Your account is linked to Fayda National ID. Prescriptions, payments, and
+          schedules are stored securely in the Aura Care platform.
         </p>
       </div>
 

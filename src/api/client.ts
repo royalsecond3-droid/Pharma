@@ -1,4 +1,6 @@
 import { mockStore } from "@/data/mockStore";
+import { auraService } from "@/services/auraService";
+import { subscriptionService } from "@/services/subscriptionService";
 import type {
   AdminStats,
   MedicationAlarm,
@@ -10,6 +12,13 @@ import type {
   StaffRole,
   UserProfile,
 } from "@/types";
+import type {
+  EquipmentAllocationResult,
+  PharmacyReservation,
+  RecordSource,
+  VitalsMetrics,
+} from "@/types/aura";
+import type { CheckoutPayload, PaymentMethodType } from "@/types/subscription";
 
 /** Use live API only when VITE_USE_API=true. Default: mock data (no server required). */
 const USE_API = import.meta.env.VITE_USE_API === "true";
@@ -253,5 +262,122 @@ export const api = {
     return request<{ prescriptions: Prescription[] }>("/api/admin/prescriptions", {
       staffId: _staffId,
     });
+  },
+
+  // ─── Aura Care business logic ─────────────────────────────────────────────
+
+  getPersonalInsights(fin: string) {
+    return Promise.resolve({ insights: auraService.getPersonalInsights(fin) });
+  },
+
+  getMedicalLogs(fin: string) {
+    return Promise.resolve({ logs: auraService.getMedicalLogs(fin) });
+  },
+
+  addMedicalLog(
+    fin: string,
+    data: {
+      source: RecordSource;
+      metrics: VitalsMetrics;
+      condition: string;
+      facilityId: string;
+      contraindicationTags?: string[];
+      timelineAt?: string;
+    },
+  ) {
+    return Promise.resolve(auraService.addMedicalLog(fin, data));
+  },
+
+  getNearbyPharmacies(medication: string, lat?: number, lng?: number) {
+    return Promise.resolve({
+      pharmacies: auraService.getNearbyPharmacies(medication, lat, lng),
+    });
+  },
+
+  getAllNearbyPharmacies(medications: string[], lat?: number, lng?: number) {
+    return Promise.resolve({
+      pharmacies: auraService.getAllNearbyPharmacies(medications, lat, lng),
+    });
+  },
+
+  getAlertPipeline(fin: string) {
+    return mockStore.getPrescriptions(fin).then(({ prescriptions }) => ({
+      pipeline: auraService.getAlertPipeline(fin, prescriptions),
+    }));
+  },
+
+  confirmPillDose(fin: string, prescriptionId: number) {
+    return Promise.resolve(auraService.confirmPillDose(fin, prescriptionId));
+  },
+
+  searchEquipment(fin: string, equipmentId: string, lat?: number, lng?: number) {
+    return Promise.resolve({
+      result: auraService.searchEquipment(fin, equipmentId, lat, lng),
+    } satisfies { result: EquipmentAllocationResult });
+  },
+
+  reserveMedication(data: {
+    patientFin: string;
+    patientName: string;
+    medication: string;
+    quantity: number;
+    facilityId: string;
+  }) {
+    return Promise.resolve({ reservation: auraService.createPharmacyReservation(data) });
+  },
+
+  getPharmacyReservations() {
+    return Promise.resolve({
+      reservations: auraService.getPharmacyReservations(),
+    } satisfies { reservations: PharmacyReservation[] });
+  },
+
+  getAdminAuraAnalytics() {
+    return Promise.resolve({ analytics: auraService.getAdminAnalytics() });
+  },
+
+  doctorGetMedicalLogs(_staffId: number, fin: string) {
+    return Promise.resolve({ logs: auraService.getMedicalLogs(fin) });
+  },
+
+  // ─── Subscription & payments ─────────────────────────────────────────────────
+
+  getSubscriptionPlans() {
+    return Promise.resolve({ plans: subscriptionService.getPlans() });
+  },
+
+  getSubscription(fin: string) {
+    return Promise.resolve({ subscription: subscriptionService.getSubscription(fin) });
+  },
+
+  getFamilyMembers(fin: string) {
+    return Promise.resolve({ members: subscriptionService.getFamilyMembers(fin) });
+  },
+
+  getPaymentHistory(fin: string) {
+    return Promise.resolve({ transactions: subscriptionService.getTransactions(fin) });
+  },
+
+  checkoutSubscription(fin: string, payload: CheckoutPayload) {
+    return subscriptionService.processCheckout(fin, payload);
+  },
+
+  startSubscriptionTrial(fin: string, planId: import("@/types/subscription").SubscriptionPlanId) {
+    return Promise.resolve({ subscription: subscriptionService.startTrial(fin, planId) });
+  },
+
+  cancelSubscription(fin: string) {
+    return Promise.resolve({ subscription: subscriptionService.cancelSubscription(fin) });
+  },
+
+  payPharmacyOrder(
+    fin: string,
+    data: { amountEtb: number; medication: string; method: PaymentMethodType },
+  ) {
+    return Promise.resolve({ transaction: subscriptionService.payReservation(fin, data) });
+  },
+
+  getAdminSubscriptionRevenue() {
+    return Promise.resolve({ revenue: subscriptionService.getAdminRevenue() });
   },
 };

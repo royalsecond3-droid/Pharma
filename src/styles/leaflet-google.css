@@ -1,0 +1,21 @@
+/* Google Maps–like polish for Leaflet */
+.leaflet-google-map .leaflet-control-zoom a {
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  color: #5f6368;
+  font-size: 18px;
+}
+
+.leaflet-google-map .leaflet-control-attribution {
+  font-size: 9px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.leaflet-google-pin {
+  background: transparent !important;
+  border: none !important;
+}

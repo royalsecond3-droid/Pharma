@@ -1,10 +1,13 @@
 import { Bell, Clock, User } from "lucide-react";
 import { Link } from "react-router";
 import type { ReactNode } from "react";
+import { ProBadge } from "@/components/subscription/ProBadge";
+import type { SubscriptionPlanId } from "@/types/subscription";
 
 interface AppHeaderProps {
   greeting?: string;
   userName: string;
+  planId?: SubscriptionPlanId;
   rightSlot?: ReactNode;
   showAlarmLink?: boolean;
 }
@@ -12,6 +15,7 @@ interface AppHeaderProps {
 export function AppHeader({
   greeting = "Good morning,",
   userName,
+  planId,
   rightSlot,
   showAlarmLink = true,
 }: AppHeaderProps) {
@@ -44,15 +48,18 @@ export function AppHeader({
             <div style={{ color: "rgba(255,255,255,0.75)", fontSize: 11 }}>
               {greeting}
             </div>
-            <div
-              style={{
-                color: "#fff",
-                fontSize: 16,
-                fontWeight: 700,
-                letterSpacing: -0.3,
-              }}
-            >
-              {userName}
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                style={{
+                  color: "#fff",
+                  fontSize: 16,
+                  fontWeight: 700,
+                  letterSpacing: -0.3,
+                }}
+              >
+                {userName}
+              </span>
+              {planId && <ProBadge planId={planId} size="md" showPlanName />}
             </div>
           </div>
         </div>

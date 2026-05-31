@@ -1,14 +1,17 @@
 import { useMemo } from "react";
-import { CheckCircle, ChevronRight, Clock, Pill } from "lucide-react";
+import { CheckCircle, ChevronRight, Clock, Crown, MapPin, Pill } from "lucide-react";
 import { Link } from "react-router";
 import { api } from "@/api/client";
 import { AppHeader } from "@/components/AppHeader";
+import { PersonalInsightsBlock } from "@/components/aura/PersonalInsightsBlock";
 import { PrescriptionCard } from "@/components/PrescriptionCard";
 import { useAuth } from "@/context/AuthContext";
 import { useApiData } from "@/hooks/useApi";
+import { usePatientPlan } from "@/hooks/usePatientPlan";
 
 export function HomePage() {
   const { user } = useAuth();
+  const { planId, isPro } = usePatientPlan();
 
   const { data: stats, loading: statsLoading } = useApiData(
     useMemo(() => (fin: string) => api.getStats(fin), []),
@@ -22,7 +25,20 @@ export function HomePage() {
 
   return (
     <>
-      <AppHeader userName={user?.fullName ?? "Patient"} />
+      <AppHeader userName={user?.fullName ?? "Patient"} planId={planId} />
+      {!isPro && (
+        <Link
+          to="/patient/subscription"
+          className="mx-5 mt-3 flex items-center gap-2 rounded-xl px-3 py-2.5 no-underline"
+          style={{ background: "#6C63FF12", border: "1px solid #6C63FF33" }}
+        >
+          <Crown size={16} color="#6C63FF" />
+          <span className="flex-1 text-xs font-semibold text-[#0F1B35]">
+            Unlock Find Care & insights — from 299 ETB/mo
+          </span>
+          <ChevronRight size={14} color="#6C63FF" />
+        </Link>
+      )}
       <div className="mt-2 flex gap-3 px-5">
         {[
           {
@@ -83,6 +99,27 @@ export function HomePage() {
           </div>
         ))}
       </div>
+
+      <PersonalInsightsBlock />
+
+      <Link
+        to="/patient/find"
+        className="mx-5 mt-4 flex items-center gap-3 rounded-2xl border border-[rgba(29,111,232,0.12)] bg-gradient-to-r from-[#F4F8FF] to-white p-4 no-underline shadow-sm"
+      >
+        <div
+          className="flex h-11 w-11 items-center justify-center rounded-xl"
+          style={{ background: "#1D6FE818" }}
+        >
+          <MapPin size={22} color="#1D6FE8" />
+        </div>
+        <div className="flex-1">
+          <div className="text-sm font-bold text-[#0F1B35]">Find Care</div>
+          <div className="text-xs text-[#5A7399]">
+            Rare meds & lab equipment — stock & ETB prices nationwide
+          </div>
+        </div>
+        <ChevronRight size={18} color="#1D6FE8" />
+      </Link>
 
       <div className="mb-3 mt-6 flex items-center justify-between px-5">
         <div

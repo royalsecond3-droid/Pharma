@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { MapPin, Search } from "lucide-react";
+import { Link } from "react-router";
 import { api } from "@/api/client";
 import { PrescriptionCard } from "@/components/PrescriptionCard";
 import { useApiData } from "@/hooks/useApi";
@@ -37,9 +38,16 @@ export function MedsPage() {
         >
           My Medications
         </h1>
-        <p style={{ fontSize: 12, color: "#5A7399", marginBottom: 16 }}>
+        <p style={{ fontSize: 12, color: "#5A7399", marginBottom: 12 }}>
           All prescriptions linked to your Fayda ID
         </p>
+        <Link
+          to="/patient/find"
+          className="mb-4 flex items-center gap-2 rounded-lg border border-[#E8EEF5] bg-white px-3 py-2.5 text-sm font-medium text-[#1D6FE8] no-underline"
+        >
+          <MapPin size={16} />
+          Show all medications on map
+        </Link>
 
         <div
           style={{

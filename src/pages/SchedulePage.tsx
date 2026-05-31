@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bell, Clock, Stethoscope, Vibrate, Volume2, X } from "lucide-react";
 import { api } from "@/api/client";
 import { MedicationPlanCard } from "@/components/schedule/MedicationPlanCard";
@@ -16,6 +16,8 @@ export function SchedulePage() {
   const [customTime, setCustomTime] = useState("08:00 AM");
   const [sound, setSound] = useState(true);
   const [vibrate, setVibrate] = useState(true);
+  const [pillCounts, setPillCounts] = useState<Record<number, number>>({});
+  const [confirmingId, setConfirmingId] = useState<number | null>(null);
 
   const rxFetcher = useMemo(
     () => (fin: string) => api.getPrescriptions(fin, { status: "active" }),
@@ -28,6 +30,30 @@ export function SchedulePage() {
 
   const prescriptions = rxData?.prescriptions ?? [];
   const alarms = alarmData?.alarms ?? [];
+
+  useEffect(() => {
+    if (!faydaFin || !prescriptions.length) return;
+    api.getAlertPipeline(faydaFin).then(() => {
+      setPillCounts((prev) => {
+        const next = { ...prev };
+        for (const rx of prescriptions) {
+          if (next[rx.id] == null) next[rx.id] = 45;
+        }
+        return next;
+      });
+    });
+  }, [faydaFin, prescriptions.length]);
+
+  const handleConfirmDose = async (rx: Prescription) => {
+    if (!faydaFin) return;
+    setConfirmingId(rx.id);
+    try {
+      const { remainingPills } = await api.confirmPillDose(faydaFin, rx.id);
+      setPillCounts((c) => ({ ...c, [rx.id]: remainingPills }));
+    } finally {
+      setConfirmingId(null);
+    }
+  };
 
   const handleSetAlarm = async (rx: Prescription, time: string) => {
     if (!faydaFin) return;
@@ -130,6 +156,9 @@ export function SchedulePage() {
               rx={rx}
               alarms={alarms}
               onSetAlarm={handleSetAlarm}
+              onConfirmDose={handleConfirmDose}
+              remainingPills={pillCounts[rx.id]}
+              confirmingDose={confirmingId === rx.id}
               settingAlarm={settingAlarm}
             />
           ))

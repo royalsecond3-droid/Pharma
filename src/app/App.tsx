@@ -11,7 +11,10 @@ import { LoginPage } from "@/pages/LoginPage";
 import { MedsPage } from "@/pages/MedsPage";
 import { PortalLanding } from "@/pages/PortalLanding";
 import { ProfilePage } from "@/pages/ProfilePage";
+import { FindCarePage } from "@/pages/FindCarePage";
+import { SubscriptionPage } from "@/pages/SubscriptionPage";
 import { SchedulePage } from "@/pages/SchedulePage";
+import { DoctorConsultationPage } from "@/pages/doctor/DoctorConsultationPage";
 import { SosPage } from "@/pages/SosPage";
 import { AdminDashboard } from "@/pages/admin/AdminDashboard";
 import { AdminPatientsPage } from "@/pages/admin/AdminPatientsPage";
@@ -53,6 +56,8 @@ export default function App() {
                 <Route path="/patient/home" element={<HomePage />} />
                 <Route path="/patient/meds" element={<MedsPage />} />
                 <Route path="/patient/schedule" element={<SchedulePage />} />
+                <Route path="/patient/find" element={<FindCarePage />} />
+                <Route path="/patient/subscription" element={<SubscriptionPage />} />
                 <Route path="/patient/sos" element={<SosPage />} />
                 <Route path="/patient/profile" element={<ProfilePage />} />
               </Route>
@@ -76,6 +81,7 @@ export default function App() {
                       { to: "/doctor/patient", label: "Patient lookup" },
                       { to: "/doctor/prescribe", label: "Prescribe" },
                       { to: "/doctor/records", label: "Health records" },
+                      { to: "/doctor/consultation", label: "Consultation" },
                     ]}
                   />
                 }
@@ -85,6 +91,7 @@ export default function App() {
                 <Route path="/doctor/patient" element={<DoctorPatientPage />} />
                 <Route path="/doctor/prescribe" element={<DoctorPrescribePage />} />
                 <Route path="/doctor/records" element={<DoctorRecordsPage />} />
+                <Route path="/doctor/consultation" element={<DoctorConsultationPage />} />
               </Route>
             </Route>
 

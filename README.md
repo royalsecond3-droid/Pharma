@@ -56,7 +56,7 @@ TenaCare separates professional boundaries into four secure dashboard routes:
 
 | FIN | Name |
 |-----|------|
-| `123456789012` | Sarah Johnson |
+| `123456789012` | Sarah Johnson (Family Core — demo) |
 | `234567890123` | Abebe Tadesse |
 | `345678901234` | Helen Girma |
 | `456789012345` | Dawit Mekonnen |

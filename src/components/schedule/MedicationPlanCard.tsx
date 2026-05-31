@@ -11,7 +11,10 @@ interface Props {
   rx: Prescription;
   alarms: MedicationAlarm[];
   onSetAlarm: (rx: Prescription, time: string) => void;
+  onConfirmDose?: (rx: Prescription) => void;
+  remainingPills?: number;
   settingAlarm?: string | null;
+  confirmingDose?: boolean;
 }
 
 function alarmKey(rxId: number, time: string) {
@@ -22,7 +25,10 @@ export function MedicationPlanCard({
   rx,
   alarms,
   onSetAlarm,
+  onConfirmDose,
+  remainingPills,
   settingAlarm,
+  confirmingDose,
 }: Props) {
   const doseTimes = getDoseTimes(rx);
   const progress = courseProgress(rx);
@@ -211,6 +217,24 @@ export function MedicationPlanCard({
           })}
         </div>
       </div>
+      {onConfirmDose && (
+        <div className="mt-3 flex items-center justify-between gap-2">
+          {remainingPills != null && (
+            <span style={{ fontSize: 11, color: "#5A7399" }}>
+              Pills left: <strong>{remainingPills}</strong>
+            </span>
+          )}
+          <button
+            type="button"
+            disabled={confirmingDose || remainingPills === 0}
+            onClick={() => onConfirmDose(rx)}
+            className="ml-auto rounded-xl px-4 py-2 text-xs font-bold text-white"
+            style={{ background: remainingPills === 0 ? "#94A3B8" : "#10B981" }}
+          >
+            {confirmingDose ? "…" : "I took this dose"}
+          </button>
+        </div>
+      )}
       {rx.doctorNotes && (
         <p
           style={{
