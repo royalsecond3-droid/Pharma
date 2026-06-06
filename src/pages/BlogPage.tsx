@@ -183,15 +183,35 @@ const BLOG_ITEMS: BlogItem[] = [
 
 const GEMINI_MODEL = import.meta.env.VITE_GEMINI_MODEL ?? "gemini-1.5-flash";
 
+// If the configured model doesn't support generateContent for the current API
+// version, attempt to list available models and pick one that does, then retry.
+async function pickSupportedModel(apiKey: string): Promise<string | null> {
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`);
+    if (!res.ok) return null;
+    const body = await res.json();
+    const models: Array<any> = body?.models ?? [];
+    for (const m of models) {
+      const methods: string[] = m.supportedMethods ?? [];
+      if (methods.includes("generateContent") || methods.includes("generate")) return m.name || m.model || null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 async function askGemini(params: {
   apiKey: string;
   prompt: string;
   context: string;
   history: ChatMessage[];
 }): Promise<string> {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${params.apiKey}`,
-    {
+  let modelToUse = import.meta.env.VITE_GEMINI_API_KEY ? import.meta.env.VITE_GEMINI_MODEL ?? GEMINI_MODEL : GEMINI_MODEL;
+
+  const makeRequest = async (model: string) => {
+    const path = model.includes("/") ? `${model}:generateContent` : `models/${model}:generateContent`;
+    return fetch(`https://generativelanguage.googleapis.com/v1/${path}?key=${params.apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -203,24 +223,31 @@ async function askGemini(params: {
           ],
         },
         contents: [
-          ...params.history.map((message) => ({
-            role: message.role,
-            parts: [{ text: message.content }],
-          })),
-          {
-            role: "user",
-            parts: [{ text: params.prompt }],
-          },
+          ...params.history.map((message) => ({ role: message.role, parts: [{ text: message.content }] })),
+          { role: "user", parts: [{ text: params.prompt }] },
         ],
         generationConfig: { temperature: 0.4, maxOutputTokens: 300 },
       }),
-    },
-  );
+    });
+  };
+
+  let response = await makeRequest(modelToUse);
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
-    const message = (body as { error?: { message?: string } }).error?.message;
-    throw new Error(message ?? "Gemini request failed");
+    const message = body?.error?.message ?? JSON.stringify(body);
+    if (typeof message === "string" && /supported|not found|does not support|is not found|not allowed/i.test(message)) {
+      const fallback = await pickSupportedModel(params.apiKey);
+      if (fallback) {
+        modelToUse = fallback;
+        response = await makeRequest(modelToUse);
+      }
+    }
+    if (!response.ok) {
+      const body2 = await response.json().catch(() => ({}));
+      const msg2 = body2?.error?.message ?? JSON.stringify(body2);
+      throw new Error(typeof msg2 === "string" ? msg2 : "Gemini request failed");
+    }
   }
 
   const data = (await response.json()) as {
