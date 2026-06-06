@@ -47,6 +47,54 @@ function getYouTubeEmbedUrl(url: string) {
 
 const BLOG_ITEMS: BlogItem[] = [
   {
+    id: "p1",
+    title: "Balancing the Basket: An Ethiopian Approach to Reimagining Diabetes Management",
+    type: "post",
+    category: "Nutrition & Lifestyle Innovation",
+    summary:
+      "When managing conditions like Type 2 diabetes or hypertension, patients often assume they must abandon culinary heritage for expensive imported meal plans. Local experts recommend using traditional whole grains like pure Teff, prioritizing high-fiber local greens, and pairing meals with pulses to stabilize blood sugar and support cardiovascular health.",
+    duration: "4 min read",
+    views: "1.2k",
+    tags: ["Diabetes", "Teff", "Nutrition"],
+    tips: [
+      "Prioritize Pure Grains: Use 100% whole-grain Teff for injera instead of refined blends.",
+      "The Fifty Percent Rule: Fill half your plate with high-fiber local greens before adding carbs.",
+      "Leverage Plant Proteins: Pair meals with Misir (lentils) or Kik (split peas) for balanced release.",
+    ],
+  },
+  {
+    id: "p2",
+    title: "Beyond the 'High-Achiever' Grind: Recognizing Burnout in Modern Urban Life",
+    type: "post",
+    category: "Mental Wellness & Stress Management",
+    summary:
+      "Chronic exhaustion is often mislabeled as dedication. Burnout is a systemic physiological collapse manifesting as brain fog, disrupted sleep, irritability, and weakened immunity. Track small behavioral shifts and introduce simple habits to protect mental clarity and resilience.",
+    duration: "3 min read",
+    views: "980",
+    tags: ["Burnout", "Stress", "Mental Wellness"],
+    tips: [
+      "Digital Sunset: Disconnect from work chats and social media at least one hour before bed.",
+      "Micro-Breaks: Take five-minute deep-breathing breaks between intensive tasks.",
+      "Community Connection: Join local peer support or wellness spaces to reduce isolation.",
+    ],
+  },
+  {
+    id: "p3",
+    title: "Culturally Rooted Recovery: Why True Wellness Requires a Community Ecosystem",
+    type: "post",
+    category: "Personal Wellness & Lifestyle Intelligence",
+    summary:
+      "Modern health tracking focuses on individual metrics, but human vitality historically thrived within community frameworks. Integrating modern tools with localized, community-driven experiences creates sustainable ecosystems for long-term recovery and wellbeing.",
+    duration: "4 min read",
+    views: "1.0k",
+    tags: ["Community", "Recovery", "Wellness"],
+    tips: [
+      "Explore Local Spaces: Join neighborhood fitness groups, running clubs, or wellness retreats.",
+      "Support Local Wellness Providers: Work with independent practitioners who understand local lifestyles.",
+      "Listen to Constraints: Cross-reference active recovery with your physical profile and adapt accordingly.",
+    ],
+  },
+  {
     id: "b0b",
     title: "Intermittent fasting: who should avoid it",
     type: "video",
