@@ -1,5 +1,12 @@
 import { useMemo } from "react";
-import { CheckCircle, ChevronRight, Clock, Crown, MapPin, Pill } from "lucide-react";
+import {
+  CheckCircle,
+  ChevronRight,
+  Clock,
+  Crown,
+  MapPin,
+  Pill,
+} from "lucide-react";
 import { Link } from "react-router";
 import { api } from "@/api/client";
 import { AppHeader } from "@/components/AppHeader";
@@ -7,10 +14,12 @@ import { PrescriptionCard } from "@/components/PrescriptionCard";
 import { useAuth } from "@/context/AuthContext";
 import { useApiData } from "@/hooks/useApi";
 import { usePatientPlan } from "@/hooks/usePatientPlan";
+import { useLanguage } from "@/context/LanguageContext";
 
 export function HomePage() {
   const { user } = useAuth();
   const { planId, isPro } = usePatientPlan();
+  const { t } = useLanguage();
 
   const { data: stats, loading: statsLoading } = useApiData(
     useMemo(() => (fin: string) => api.getStats(fin), []),
@@ -24,7 +33,12 @@ export function HomePage() {
 
   return (
     <>
-      <AppHeader userName={user?.fullName ?? "Patient"} planId={planId} />
+      <AppHeader
+        userName={user?.fullName ?? "Patient"}
+        planId={planId}
+        greeting={t("goodMorning")}
+        showLanguageSelector
+      />
       {!isPro && (
         <Link
           to="/patient/subscription"
@@ -33,7 +47,7 @@ export function HomePage() {
         >
           <Crown size={16} color="#6C63FF" />
           <span className="flex-1 text-xs font-semibold text-[#0F1B35]">
-            Unlock Find Care & insights — from 299 ETB/mo
+            {t("unlockFindCare")}
           </span>
           <ChevronRight size={14} color="#6C63FF" />
         </Link>
@@ -41,17 +55,17 @@ export function HomePage() {
       <div className="mt-2 flex gap-3 px-5">
         {[
           {
-            label: "Active Rx",
+            label: t("activeRx"),
             value: statsLoading ? "—" : String(stats?.activeRx ?? 0),
             icon: <Pill size={14} color="#1D6FE8" />,
           },
           {
-            label: "Completed",
+            label: t("completed"),
             value: statsLoading ? "—" : String(stats?.completed ?? 0),
             icon: <CheckCircle size={14} color="#10B981" />,
           },
           {
-            label: "Today",
+            label: t("today"),
             value: statsLoading ? "—" : String(stats?.today ?? 0),
             icon: <Clock size={14} color="#F59E0B" />,
           },
@@ -110,9 +124,9 @@ export function HomePage() {
           <MapPin size={22} color="#1D6FE8" />
         </div>
         <div className="flex-1">
-          <div className="text-sm font-bold text-[#0F1B35]">Find Care</div>
+          <div className="text-sm font-bold text-[#0F1B35]">{t("findCare")}</div>
           <div className="text-xs text-[#5A7399]">
-            Rare meds & lab equipment — stock & ETB prices nationwide
+            {t("findCareDesc")}
           </div>
         </div>
         <ChevronRight size={18} color="#1D6FE8" />
@@ -127,7 +141,7 @@ export function HomePage() {
             letterSpacing: -0.3,
           }}
         >
-          Recent Prescriptions
+          {t("recentPrescriptions")}
         </div>
         <Link
           to="/patient/meds"
@@ -141,18 +155,18 @@ export function HomePage() {
             gap: 4,
           }}
         >
-          View all <ChevronRight size={14} />
+          {t("viewAll")} <ChevronRight size={14} />
         </Link>
       </div>
 
       <div className="flex flex-col gap-3 px-5 pb-6">
         {rxLoading ? (
           <p className="py-8 text-center text-sm" style={{ color: "#5A7399" }}>
-            Loading prescriptions…
+            {t("loadingPrescriptions")}
           </p>
         ) : recent.length === 0 ? (
           <p className="py-8 text-center text-sm" style={{ color: "#5A7399" }}>
-            No prescriptions yet.
+            {t("noPrescriptions")}
           </p>
         ) : (
           recent.map((rx) => <PrescriptionCard key={rx.id} rx={rx} />)

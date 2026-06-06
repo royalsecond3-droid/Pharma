@@ -18,10 +18,12 @@ import {
   normalizeFin,
 } from "@/lib/fayda";
 import { APP_NAME, LOGO_SRC } from "@/lib/brand";
+import { useLanguage } from "@/context/LanguageContext";
 
 export function LoginPage() {
   const navigate = useNavigate();
   const { loginWithFayda } = useAuth();
+  const { t } = useLanguage();
   const [fin, setFin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
@@ -38,7 +40,7 @@ export function LoginPage() {
       await loginWithFayda(normalizedFin);
       navigate("/patient/home");
     } catch {
-      setError("Could not sign in. Check your Fayda ID and try again.");
+      setError(t("loginSignInError"));
     } finally {
       setVerifying(false);
     }
@@ -49,7 +51,7 @@ export function LoginPage() {
     const normalized = normalizeFin(fin);
     const message = finValidationMessage(fin);
     if (message || !isValidFin(fin)) {
-      setError(message ?? "Invalid Fayda National ID");
+      setError(message ?? t("loginInvalidFin"));
       return;
     }
     await verifyAndLogin(normalized);
@@ -60,7 +62,7 @@ export function LoginPage() {
     if (!isValidFin(fin)) {
       setError(
         finValidationMessage(fin) ??
-          "Enter your Fayda National ID first, or open the Fayda app to verify.",
+          t("loginEnterFinFirst"),
       );
       return;
     }
@@ -107,7 +109,7 @@ export function LoginPage() {
                   fontWeight: 500,
                 }}
               >
-                Patient Portal
+                {t("loginPatientPortal")}
               </div>
             </div>
           </div>
@@ -120,7 +122,7 @@ export function LoginPage() {
               textAlign: "center",
             }}
           >
-            Sign in with Fayda
+            {t("loginSignInWithFayda")}
           </div>
           <div
             style={{
@@ -131,7 +133,7 @@ export function LoginPage() {
               maxWidth: 280,
             }}
           >
-            Use your Ethiopian National ID (Fayda) to access your health records
+            {t("loginUseNationalId")}
           </div>
           <div style={{ position: "absolute", right: 20, top: 20, opacity: 0.12 }}>
             <Heart size={64} color="#fff" />
@@ -176,10 +178,10 @@ export function LoginPage() {
             </div>
             <div className="flex-1">
               <div style={{ fontSize: 12, fontWeight: 700, color: "#0F1B35" }}>
-                Fayda National ID
+                {t("loginFaydaIdTitle")}
               </div>
               <div style={{ fontSize: 10, color: "#5A7399" }}>
-                Official digital identity · Ethiopia
+                {t("loginFaydaIdSubtitle")}
               </div>
             </div>
             <CheckCircle size={16} color="#0FB8C3" />
@@ -196,7 +198,7 @@ export function LoginPage() {
                 letterSpacing: 0.8,
               }}
             >
-              Fayda ID number (FIN)
+              {t("loginFinLabel")}
             </label>
             <div
               style={{
@@ -268,12 +270,12 @@ export function LoginPage() {
               letterSpacing: 0.2,
             }}
           >
-            {verifying ? "Verifying…" : "Verify National ID"}
+            {verifying ? t("loginVerifying") : t("loginVerifyNationalId")}
           </button>
 
           <div className="my-5 flex items-center gap-3">
             <div style={{ flex: 1, height: 1, background: "rgba(29,111,232,0.10)" }} />
-            <span style={{ fontSize: 12, color: "#5A7399", fontWeight: 500 }}>or</span>
+            <span style={{ fontSize: 12, color: "#5A7399", fontWeight: 500 }}>{t("loginOr")}</span>
             <div style={{ flex: 1, height: 1, background: "rgba(29,111,232,0.10)" }} />
           </div>
 
@@ -298,14 +300,13 @@ export function LoginPage() {
             }}
           >
             <Scan size={18} />
-            Verify with Fayda App
+            {t("loginVerifyWithApp")}
           </button>
 
           <div className="mt-5 flex items-start gap-2">
             <Shield size={14} color="#5A7399" style={{ flexShrink: 0, marginTop: 1 }} />
             <p style={{ fontSize: 11, color: "#5A7399", lineHeight: 1.5, margin: 0 }}>
-              Login is only available through Fayda National ID. Your identity is
-              verified securely and is never shared without your consent.
+              {t("loginSecurityNote")}
             </p>
           </div>
         </form>
@@ -315,7 +316,7 @@ export function LoginPage() {
           style={{ background: "#F4F8FF" }}
         >
           <p style={{ fontSize: 11, fontWeight: 700, color: "#0F1B35", marginBottom: 8 }}>
-            Demo patients (tap FIN to copy)
+            {t("loginDemoPatients")}
           </p>
           <div className="flex flex-col gap-1.5">
             {DEMO_PATIENT_FINS.slice(0, 4).map((p) => (
@@ -335,7 +336,7 @@ export function LoginPage() {
 
         <p className="mt-4 text-center">
           <Link to="/" style={{ fontSize: 12, color: "#5A7399", textDecoration: "none" }}>
-            ← All portals
+            ← {t("loginAllPortals")}
           </Link>
         </p>
 
@@ -343,14 +344,14 @@ export function LoginPage() {
           className="mt-4 text-center"
           style={{ fontSize: 12, color: "#5A7399", lineHeight: 1.5 }}
         >
-          Don&apos;t have Fayda yet?{" "}
+          {t("loginNoFayda")}{" "}
           <a
             href="https://id.et"
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: "#1D6FE8", fontWeight: 700, textDecoration: "none" }}
           >
-            Register at id.et
+            {t("loginRegisterIdet")}
           </a>
         </p>
       </div>

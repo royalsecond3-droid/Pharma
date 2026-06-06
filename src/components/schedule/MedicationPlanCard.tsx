@@ -9,6 +9,7 @@ import {
 
 interface Props {
   rx: Prescription;
+  t: (key: string) => string;
   alarms: MedicationAlarm[];
   onSetAlarm: (rx: Prescription, time: string) => void;
   onConfirmDose?: (rx: Prescription) => void;
@@ -23,6 +24,7 @@ function alarmKey(rxId: number, time: string) {
 
 export function MedicationPlanCard({
   rx,
+  t,
   alarms,
   onSetAlarm,
   onConfirmDose,
@@ -118,7 +120,7 @@ export function MedicationPlanCard({
               }}
             >
               <Calendar size={11} />
-              {getDurationDays(rx)} days
+              {getDurationDays(rx)} {t("homeDays")}
             </span>
           </div>
           <p style={{ fontSize: 11, color: "#5A7399", marginTop: 8 }}>
@@ -156,7 +158,7 @@ export function MedicationPlanCard({
             marginBottom: 8,
           }}
         >
-          Take at these times
+          {t("scheduleTakeTimes")}
         </div>
         <div className="flex flex-col gap-2">
           {doseTimes.map((time) => {
@@ -183,7 +185,7 @@ export function MedicationPlanCard({
                   </span>
                   {active && (
                     <span style={{ fontSize: 10, fontWeight: 600, color: "#10B981" }}>
-                      Alarm on
+                      {t("scheduleAlarmOn")}
                     </span>
                   )}
                 </div>
@@ -208,7 +210,7 @@ export function MedicationPlanCard({
                     }}
                   >
                     <Bell size={12} />
-                    {loading ? "…" : "Set alarm"}
+                    {loading ? "..." : t("scheduleSetAlarm")}
                   </button>
                 )}
                 {active && <BellRing size={18} color="#10B981" />}
@@ -221,7 +223,7 @@ export function MedicationPlanCard({
         <div className="mt-3 flex items-center justify-between gap-2">
           {remainingPills != null && (
             <span style={{ fontSize: 11, color: "#5A7399" }}>
-              Pills left: <strong>{remainingPills}</strong>
+              {t("schedulePillsLeft")}: <strong>{remainingPills}</strong>
             </span>
           )}
           <button
@@ -231,7 +233,7 @@ export function MedicationPlanCard({
             className="ml-auto rounded-xl px-4 py-2 text-xs font-bold text-white"
             style={{ background: remainingPills === 0 ? "#94A3B8" : "#10B981" }}
           >
-            {confirmingDose ? "…" : "I took this dose"}
+            {confirmingDose ? "..." : t("scheduleDoseTaken")}
           </button>
         </div>
       )}

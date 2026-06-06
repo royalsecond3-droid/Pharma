@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import {
+  BookOpen,
   CalendarClock,
   CircleUserRound,
   Compass,
@@ -8,6 +9,7 @@ import {
   Siren,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router";
+import { useLanguage } from "@/context/LanguageContext";
 import "@/styles/dynamic-island-nav.css";
 
 type NavIcon = typeof Home;
@@ -15,17 +17,18 @@ type NavIcon = typeof Home;
 interface NavItem {
   to: string;
   icon: NavIcon;
-  label: string;
+  labelKey: string;
   sos?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: "/patient/home", icon: Home, label: "Home" },
-  { to: "/patient/meds", icon: Pill, label: "Meds" },
-  { to: "/patient/find", icon: Compass, label: "Find" },
-  { to: "/patient/sos", icon: Siren, label: "SOS", sos: true },
-  { to: "/patient/schedule", icon: CalendarClock, label: "Schedule" },
-  { to: "/patient/profile", icon: CircleUserRound, label: "Profile" },
+  { to: "/patient/home", icon: Home, labelKey: "navHome" },
+  { to: "/patient/meds", icon: Pill, labelKey: "navMeds" },
+  { to: "/patient/find", icon: Compass, labelKey: "navFind" },
+  { to: "/patient/blog", icon: BookOpen, labelKey: "navBlog" },
+  { to: "/patient/sos", icon: Siren, labelKey: "navSos", sos: true },
+  { to: "/patient/schedule", icon: CalendarClock, labelKey: "navSchedule" },
+  { to: "/patient/profile", icon: CircleUserRound, labelKey: "navProfile" },
 ];
 
 function activeIndexFor(pathname: string): number {
@@ -36,6 +39,7 @@ function activeIndexFor(pathname: string): number {
 }
 
 export function BottomNav() {
+  const { t } = useLanguage();
   const { pathname } = useLocation();
   const activeIndex = activeIndexFor(pathname);
   const navRef = useRef<HTMLElement>(null);
@@ -103,7 +107,7 @@ export function BottomNav() {
                   tabRefs.current[index] = el;
                 }}
                 to={item.to}
-                aria-label={item.label}
+                aria-label={t(item.labelKey)}
                 aria-current={isActive ? "page" : undefined}
                 className={`dynamic-island-link relative z-[1] flex flex-1 flex-col items-center justify-center px-0.5 py-2 no-underline ${
                   item.sos ? "dynamic-island-tab--sos -mt-3" : ""
@@ -142,7 +146,7 @@ export function BottomNav() {
                       : "text-transparent"
                   }`}
                 >
-                  {item.label}
+                  {t(item.labelKey)}
                 </span>
               </NavLink>
             );

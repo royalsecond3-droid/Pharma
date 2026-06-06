@@ -10,6 +10,7 @@ import { Link } from "react-router";
 import { useAuth } from "@/context/AuthContext";
 import { APP_NAME } from "@/lib/brand";
 import { getSosHistory, sendSosAlert, type SosAlert } from "@/lib/sos";
+import { useLanguage } from "@/context/LanguageContext";
 
 const EMERGENCY_NUMBERS = [
   { label: "Ethiopia Emergency", number: "911", primary: true },
@@ -18,6 +19,7 @@ const EMERGENCY_NUMBERS = [
 
 export function SosPage() {
   const { user, faydaFin } = useAuth();
+  const { t } = useLanguage();
   const [holding, setHolding] = useState(false);
   const [holdProgress, setHoldProgress] = useState(0);
   const [lastAlert, setLastAlert] = useState<SosAlert | null>(null);
@@ -28,7 +30,7 @@ export function SosPage() {
   }, [faydaFin, lastAlert]);
 
   const caregiverPhone = user?.phone ?? "+251 911 000 000";
-  const caregiverName = "Caregiver / family";
+  const caregiverName = t("sosCaregiverFamily");
 
   const triggerSos = () => {
     if (!faydaFin) return;
@@ -70,12 +72,11 @@ export function SosPage() {
               letterSpacing: -0.3,
             }}
           >
-            SOS Emergency
+            {t("sosTitle")}
           </h1>
         </div>
         <p style={{ fontSize: 12, color: "#5A7399", marginTop: 4 }}>
-          Hold the button for 2 seconds to alert your caregiver and share your
-          Fayda-linked profile with {APP_NAME}.
+          {t("sosSubtitle")} with {APP_NAME}.
         </p>
       </div>
 
@@ -85,7 +86,7 @@ export function SosPage() {
           style={{ background: "#E0F7EF", border: "1.5px solid #10B98144" }}
         >
           <p style={{ fontSize: 14, fontWeight: 700, color: "#10B981" }}>
-            SOS alert sent (demo)
+            {t("sosSent")}
           </p>
           <p style={{ fontSize: 12, color: "#5A7399", marginTop: 4 }}>
             {lastAlert.locationNote}
@@ -142,17 +143,17 @@ export function SosPage() {
           <AlertTriangle size={40} />
           SOS
           <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.9 }}>
-            {holding ? "Keep holding…" : "Hold 2 sec"}
+            {holding ? t("sosKeepHolding") : t("sosHold2Sec")}
           </span>
         </button>
         <p style={{ fontSize: 11, color: "#9BA7B4", marginTop: 16, textAlign: "center" }}>
-          Release to cancel · Demo mode — no real emergency dispatch
+          {t("sosReleaseCancel")}
         </p>
       </div>
 
       <div className="mt-6 px-5">
         <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0F1B35", marginBottom: 10 }}>
-          Quick call
+          {t("sosQuickCall")}
         </h2>
         <div className="flex flex-col gap-2">
           <a
@@ -223,7 +224,7 @@ export function SosPage() {
       {history.length > 0 && (
         <div className="mt-6 px-5">
           <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0F1B35", marginBottom: 8 }}>
-            Recent alerts
+            {t("sosRecentAlerts")}
           </h2>
           {history.slice(0, 3).map((a) => (
             <p key={a.id} style={{ fontSize: 11, color: "#5A7399", marginBottom: 4 }}>
@@ -240,13 +241,12 @@ export function SosPage() {
         <MapPin size={18} color="#1D6FE8" className="mt-0.5 shrink-0" />
         <div>
           <p style={{ fontSize: 12, fontWeight: 700, color: "#0F1B35" }}>
-            Location sharing (coming soon)
+            {t("sosLocationSoon")}
           </p>
           <p style={{ fontSize: 11, color: "#5A7399", marginTop: 4 }}>
-            Live GPS will be sent to caregivers when SOS is triggered. Update your
-            phone in{" "}
+            {t("sosLocationBody")}{" "}
             <Link to="/patient/profile" className="text-primary">
-              Profile
+              {t("navProfile")}
             </Link>
             .
           </p>

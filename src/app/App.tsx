@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import { AuthProvider } from "@/context/AuthContext";
 import { StaffAuthProvider } from "@/context/StaffAuthContext";
+import { LanguageProvider } from "@/context/LanguageContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { GuestRoute } from "@/components/layout/GuestRoute";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
@@ -14,6 +15,7 @@ import { ProfilePage } from "@/pages/ProfilePage";
 import { FindCarePage } from "@/pages/FindCarePage";
 import { SubscriptionPage } from "@/pages/SubscriptionPage";
 import { SchedulePage } from "@/pages/SchedulePage";
+import { BlogPage } from "@/pages/BlogPage";
 import { DoctorConsultationPage } from "@/pages/doctor/DoctorConsultationPage";
 import { SosPage } from "@/pages/SosPage";
 import { AdminDashboard } from "@/pages/admin/AdminDashboard";
@@ -31,10 +33,11 @@ import { StaffLoginPage } from "@/pages/portals/StaffLoginPage";
 
 export default function App() {
   return (
-    <AuthProvider>
-      <StaffAuthProvider>
-        <BrowserRouter>
-          <Routes>
+    <LanguageProvider>
+      <AuthProvider>
+        <StaffAuthProvider>
+          <BrowserRouter>
+            <Routes>
             <Route path="/" element={<PortalLanding />} />
 
             {/* Patient mobile app */}
@@ -42,6 +45,7 @@ export default function App() {
             <Route path="/home" element={<Navigate to="/patient/home" replace />} />
             <Route path="/meds" element={<Navigate to="/patient/meds" replace />} />
             <Route path="/schedule" element={<Navigate to="/patient/schedule" replace />} />
+            <Route path="/blog" element={<Navigate to="/patient/blog" replace />} />
             <Route path="/profile" element={<Navigate to="/patient/profile" replace />} />
             <Route path="/sos" element={<Navigate to="/patient/sos" replace />} />
             <Route path="/dashboard" element={<Navigate to="/patient/home" replace />} />
@@ -56,6 +60,7 @@ export default function App() {
                 <Route path="/patient/home" element={<HomePage />} />
                 <Route path="/patient/meds" element={<MedsPage />} />
                 <Route path="/patient/schedule" element={<SchedulePage />} />
+                <Route path="/patient/blog" element={<BlogPage />} />
                 <Route path="/patient/find" element={<FindCarePage />} />
                 <Route path="/patient/subscription" element={<SubscriptionPage />} />
                 <Route path="/patient/sos" element={<SosPage />} />
@@ -148,9 +153,10 @@ export default function App() {
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
-      </StaffAuthProvider>
-    </AuthProvider>
+            </Routes>
+          </BrowserRouter>
+        </StaffAuthProvider>
+      </AuthProvider>
+    </LanguageProvider>
   );
 }

@@ -1,7 +1,9 @@
 import { Link } from "react-router";
 import type { MedicationSupplyItem } from "@/types/medicationSupply";
+import { useLanguage } from "@/context/LanguageContext";
 
 export function MedicationSupplyCard({ item }: { item: MedicationSupplyItem }) {
+  const { t } = useLanguage();
   const bought = item.status === "paid";
 
   return (
@@ -14,13 +16,13 @@ export function MedicationSupplyCard({ item }: { item: MedicationSupplyItem }) {
         </div>
       </div>
       {bought ? (
-        <span className="text-xs font-semibold text-[#10B981]">Pay buy</span>
+        <span className="text-xs font-semibold text-[#10B981]">{t("medsPayBuy")}</span>
       ) : (
         <Link
           to="/patient/find"
           className="text-xs font-semibold text-[#1D6FE8] no-underline"
         >
-          Unbuy →
+          {t("medsUnbuy")} →
         </Link>
       )}
     </div>

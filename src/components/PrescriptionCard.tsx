@@ -1,8 +1,11 @@
 import { Calendar, Clock, Pill } from "lucide-react";
 import type { Prescription } from "@/types";
 import { formatCourseSummary, getDoseTimes, getDurationDays } from "@/lib/schedule";
+import { useLanguage } from "@/context/LanguageContext";
 
 export function PrescriptionCard({ rx }: { rx: Prescription }) {
+  const { t } = useLanguage();
+
   return (
     <article
       style={{
@@ -59,7 +62,7 @@ export function PrescriptionCard({ rx }: { rx: Prescription }) {
                 color: rx.status === "active" ? "#10B981" : "#9CA3AF",
               }}
             >
-              {rx.status === "active" ? "● Active" : "✓ Done"}
+              {rx.status === "active" ? `● ${t("medsActive")}` : `✓ ${t("medsDone")}`}
             </div>
           </div>
 
@@ -103,7 +106,7 @@ export function PrescriptionCard({ rx }: { rx: Prescription }) {
                 color: "#5A7399",
               }}
             >
-              {getDurationDays(rx)} days · {formatCourseSummary(rx)}
+              {getDurationDays(rx)} {t("homeDays")} · {formatCourseSummary(rx)}
             </div>
           </div>
 

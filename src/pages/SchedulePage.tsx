@@ -5,11 +5,13 @@ import { MedicationPlanCard } from "@/components/schedule/MedicationPlanCard";
 import { useAuth } from "@/context/AuthContext";
 import { useApiData } from "@/hooks/useApi";
 import type { Prescription } from "@/types";
+import { useLanguage } from "@/context/LanguageContext";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export function SchedulePage() {
   const { faydaFin } = useAuth();
+  const { t } = useLanguage();
   const [settingAlarm, setSettingAlarm] = useState<string | null>(null);
   const [showCustom, setShowCustom] = useState(false);
   const [customMed, setCustomMed] = useState("");
@@ -112,10 +114,10 @@ export function SchedulePage() {
             letterSpacing: -0.3,
           }}
         >
-          Medication Schedule
+          {t("scheduleTitle")}
         </h1>
         <p style={{ fontSize: 12, color: "#5A7399", marginTop: 4 }}>
-          Doctor-prescribed plan, course length, and reminder alarms
+          {t("scheduleSubtitle")}
         </p>
       </div>
 
@@ -129,13 +131,13 @@ export function SchedulePage() {
       >
         <Stethoscope size={16} color="#6C63FF" />
         <span style={{ fontSize: 13, fontWeight: 700, color: "#0F1B35" }}>
-          Prescribed by your doctor
+          {t("scheduleByDoctor")}
         </span>
       </div>
 
       <div className="mt-3 flex flex-col gap-3 px-5">
         {rxLoading ? (
-          <p style={{ fontSize: 12, color: "#5A7399" }}>Loading your medication plan…</p>
+          <p style={{ fontSize: 12, color: "#5A7399" }}>{t("scheduleLoadingPlan")}</p>
         ) : prescriptions.length === 0 ? (
           <p
             style={{
@@ -146,14 +148,14 @@ export function SchedulePage() {
               borderRadius: 16,
             }}
           >
-            No active prescriptions yet. Your doctor will add medications with how many
-            days to take them and when to take each dose.
+            {t("scheduleNoActive")}
           </p>
         ) : (
           prescriptions.map((rx) => (
             <MedicationPlanCard
               key={rx.id}
               rx={rx}
+              t={t}
               alarms={alarms}
               onSetAlarm={handleSetAlarm}
               onConfirmDose={handleConfirmDose}
@@ -170,7 +172,7 @@ export function SchedulePage() {
           <div className="flex items-center gap-2">
             <Bell size={16} color="#1D6FE8" />
             <span style={{ fontSize: 13, fontWeight: 700, color: "#0F1B35" }}>
-              Active reminders
+              {t("scheduleActiveReminders")}
             </span>
           </div>
           <button
@@ -185,7 +187,7 @@ export function SchedulePage() {
               cursor: "pointer",
             }}
           >
-            {showCustom ? "Cancel" : "+ Custom alarm"}
+            {showCustom ? t("scheduleCancel") : t("scheduleCustomAlarm")}
           </button>
         </div>
 
@@ -200,7 +202,7 @@ export function SchedulePage() {
             }}
           >
             <input
-              placeholder="Medication name"
+              placeholder={t("scheduleMedicationName")}
               value={customMed}
               onChange={(e) => setCustomMed(e.target.value)}
               className="mb-2 w-full rounded-xl border border-border px-3 py-2 text-sm"
@@ -208,13 +210,13 @@ export function SchedulePage() {
             <input
               value={customTime}
               onChange={(e) => setCustomTime(e.target.value)}
-              placeholder="e.g. 08:00 AM"
+              placeholder={t("scheduleTimePlaceholder")}
               className="mb-2 w-full rounded-xl border border-border px-3 py-2 text-sm"
             />
             <div className="mb-3 flex gap-4">
               {[
-                { label: "Sound", val: sound, set: setSound, icon: Volume2 },
-                { label: "Vibrate", val: vibrate, set: setVibrate, icon: Vibrate },
+                { label: t("scheduleSound"), val: sound, set: setSound, icon: Volume2 },
+                { label: t("scheduleVibrate"), val: vibrate, set: setVibrate, icon: Vibrate },
               ].map(({ label, val, set, icon: Icon }) => (
                 <button
                   key={label}
@@ -254,16 +256,16 @@ export function SchedulePage() {
                 opacity: !customMed.trim() ? 0.5 : 1,
               }}
             >
-              Save custom reminder
+              {t("scheduleSaveCustom")}
             </button>
           </div>
         )}
 
         {loading ? (
-          <p style={{ fontSize: 12, color: "#5A7399" }}>Loading reminders…</p>
+          <p style={{ fontSize: 12, color: "#5A7399" }}>{t("scheduleLoadingReminders")}</p>
         ) : alarms.length === 0 ? (
           <p style={{ fontSize: 12, color: "#5A7399" }}>
-            Tap &quot;Set alarm&quot; on a dose time above to get reminders.
+            {t("scheduleTapSetAlarm")}
           </p>
         ) : (
           <div className="flex flex-col gap-3">
@@ -310,13 +312,13 @@ export function SchedulePage() {
                   </div>
                   <div style={{ fontSize: 10, color: "#9BA7B4", marginTop: 2 }}>
                     {alarm.days.join(", ")}
-                    {alarm.prescriptionId ? " · Linked to Rx" : ""}
+                    {alarm.prescriptionId ? ` · ${t("scheduleLinkedRx")}` : ""}
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleDelete(alarm.id)}
-                  aria-label="Remove alarm"
+                  aria-label={t("scheduleRemoveAlarm")}
                   style={{
                     background: "none",
                     border: "none",

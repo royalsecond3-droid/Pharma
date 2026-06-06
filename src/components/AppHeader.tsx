@@ -1,8 +1,9 @@
-import { Bell, Clock, User } from "lucide-react";
+import { Bell, Clock, Languages, User } from "lucide-react";
 import { Link } from "react-router";
 import type { ReactNode } from "react";
 import { ProBadge } from "@/components/subscription/ProBadge";
 import type { SubscriptionPlanId } from "@/types/subscription";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface AppHeaderProps {
   greeting?: string;
@@ -10,15 +11,20 @@ interface AppHeaderProps {
   planId?: SubscriptionPlanId;
   rightSlot?: ReactNode;
   showAlarmLink?: boolean;
+  showLanguageSelector?: boolean;
 }
 
 export function AppHeader({
-  greeting = "Good morning,",
+  greeting,
   userName,
   planId,
   rightSlot,
   showAlarmLink = true,
+  showLanguageSelector = false,
 }: AppHeaderProps) {
+  const { language, setLanguage, options, t } = useLanguage();
+  const resolvedGreeting = greeting ?? t("goodMorning");
+
   return (
     <div
       style={{
@@ -46,7 +52,7 @@ export function AppHeader({
           </div>
           <div>
             <div style={{ color: "rgba(255,255,255,0.75)", fontSize: 11 }}>
-              {greeting}
+              {resolvedGreeting}
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <span
@@ -64,6 +70,44 @@ export function AppHeader({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {showLanguageSelector && (
+            <label
+              aria-label="Language"
+              style={{
+                height: 38,
+                borderRadius: 11,
+                background: "rgba(255,255,255,0.2)",
+                border: "1.5px solid rgba(255,255,255,0.4)",
+                backdropFilter: "blur(8px)",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "0 8px",
+                color: "#fff",
+              }}
+            >
+              <Languages size={14} color="#fff" />
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as typeof language)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#fff",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  outline: "none",
+                  cursor: "pointer",
+                }}
+              >
+                {options.map((option) => (
+                  <option key={option.code} value={option.code} style={{ color: "#0F1B35" }}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           {showAlarmLink && (
             <Link
               to="/patient/schedule"

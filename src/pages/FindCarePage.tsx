@@ -14,6 +14,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useApiData } from "@/hooks/useApi";
 import type { EquipmentAllocationResult, PharmacyNearby } from "@/types/aura";
 import type { PaymentMethodType } from "@/types/subscription";
+import { useLanguage } from "@/context/LanguageContext";
 
 const EQUIPMENT_OPTIONS = ["MRI", "CT Scanner", "Ultrasound"];
 const PAY_METHODS: PaymentMethodType[] = ["telebirr", "cbe_birr", "chapa"];
@@ -21,6 +22,7 @@ const ALL_MEDICATIONS = "__all__";
 
 export function FindCarePage() {
   const { user, faydaFin: fin } = useAuth();
+  const { t } = useLanguage();
   const { planId, isPro } = usePatientPlan();
   const [tab, setTab] = useState<"pharmacy" | "lab">("pharmacy");
   const [selectedMed, setSelectedMed] = useState(ALL_MEDICATIONS);
@@ -85,7 +87,7 @@ export function FindCarePage() {
       id: "patient",
       lat: DEFAULT_PATIENT_LOCATION.lat,
       lng: DEFAULT_PATIENT_LOCATION.lng,
-      label: "You",
+      label: t("findcareYou"),
       kind: "patient",
     };
     const coordCount = new Map<string, number>();
@@ -109,14 +111,14 @@ export function FindCarePage() {
         };
       }),
     ];
-  }, [pharmacies]);
+  }, [pharmacies, t]);
 
   const labMapMarkers: CareMapMarker[] = useMemo(() => {
     const you: CareMapMarker = {
       id: "patient",
       lat: DEFAULT_PATIENT_LOCATION.lat,
       lng: DEFAULT_PATIENT_LOCATION.lng,
-      label: "You",
+      label: t("findcareYou"),
       kind: "patient",
     };
     return [
@@ -133,7 +135,7 @@ export function FindCarePage() {
         kind: "hospital" as const,
       })),
     ];
-  }, [labResult]);
+  }, [labResult, t]);
 
   const completeReserve = async (ph: PharmacyNearby, paid: boolean) => {
     if (!fin || !user) return;
@@ -168,12 +170,12 @@ export function FindCarePage() {
       });
       setMessage(
         paid
-          ? `Pay buy ${ph.priceEtb} ETB & reserved at ${ph.name}`
-          : `Unbuy — reserved at ${ph.name}`,
+          ? `${t("findcarePayReserved")} ${ph.name} (${ph.priceEtb} ETB)`
+          : `${t("findcareUnbuyReserved")} ${ph.name}`,
       );
       setPayModal(null);
     } catch {
-      setMessage("Could not complete — try again");
+      setMessage(t("findcareCouldNotComplete"));
     } finally {
       setReserving(null);
     }
@@ -197,9 +199,9 @@ export function FindCarePage() {
         priceEtb: facility.priceEtb,
         etaLabel: facility.etaLabel,
       });
-      setMessage(`Lab request: ${equipment} at ${facility.name}`);
+      setMessage(`${t("findcareLabRequestPrefix")}: ${equipment} at ${facility.name}`);
     } catch {
-      setMessage("Could not save lab request");
+      setMessage(t("findcareCouldNotLabRequest"));
     } finally {
       setLabRequesting(null);
     }
@@ -217,22 +219,22 @@ export function FindCarePage() {
 
   return (
     <>
-      <AppHeader userName={user?.fullName ?? "Patient"} planId={planId} />
-      <SubscriptionGate feature="Find Care" requiredPlan="care_plus" currentPlan={planId} />
+      <AppHeader userName={user?.fullName ?? "Patient"} planId={planId} greeting={t("goodMorning")} />
+      <SubscriptionGate feature={t("findcareFeature")} requiredPlan="care_plus" currentPlan={planId} />
 
       <div className="px-5 pb-6">
-        <h1 className="text-lg font-bold text-[#0F1B35]">Find Care</h1>
+        <h1 className="text-lg font-bold text-[#0F1B35]">{t("findCare")}</h1>
         <p className="mt-1 text-sm text-[#5A7399]">
           {showAllMeds && tab === "pharmacy"
-            ? `${pharmacies.length} dots on map · tap Start for route`
-            : "Pick a place, tap Start to see the route"}
+            ? `${pharmacies.length} ${t("findcareMapAllDots")}`
+            : t("findcarePickPlace")}
         </p>
 
         <div className="mt-4 flex gap-2 rounded-xl bg-[#F4F8FF] p-1">
           {(
             [
-              { id: "pharmacy" as const, label: "Pharmacies", icon: Pill },
-              { id: "lab" as const, label: "Lab equipment", icon: Scan },
+              { id: "pharmacy" as const, label: t("findcarePharmacies"), icon: Pill },
+              { id: "lab" as const, label: t("findcareLabEquip"), icon: Scan },
             ] as const
           ).map(({ id, label, icon: Icon }) => (
             <button
@@ -258,13 +260,7 @@ export function FindCarePage() {
               mapMarkers.length > 1
                 ? mapMarkers
                 : [
-                    {
-                      id: "patient",
-                      lat: DEFAULT_PATIENT_LOCATION.lat,
-                      lng: DEFAULT_PATIENT_LOCATION.lng,
-                      label: "You",
-                      kind: "patient",
-                    },
+                    { id: "patient", lat: DEFAULT_PATIENT_LOCATION.lat, lng: DEFAULT_PATIENT_LOCATION.lng, label: t("findcareYou"), kind: "patient" },
                   ]
             }
             selectedId={selectedMapId ?? "patient"}
@@ -281,11 +277,11 @@ export function FindCarePage() {
           <>
             {!hasFindCare ? (
               <p className="mt-8 text-center text-sm text-[#5A7399]">
-                Upgrade your subscription to search pharmacies nationwide.
+                {t("findcareUpgrade")}
               </p>
             ) : (
               <>
-                <label className="mt-4 block text-xs text-[#5A7399]">Medication</label>
+                <label className="mt-4 block text-xs text-[#5A7399]">{t("findcareMedication")}</label>
                 <select
                   value={selectedMed}
                   onChange={(e) => {
@@ -294,7 +290,7 @@ export function FindCarePage() {
                   }}
                   className="mt-1 w-full rounded-lg border border-[#E8EEF5] px-3 py-2 text-sm"
                 >
-                  <option value={ALL_MEDICATIONS}>All my medications — show all dots</option>
+                  <option value={ALL_MEDICATIONS}>{t("findcareAllMeds")}</option>
                   {medications.map((m) => (
                     <option key={m} value={m}>
                       {m}
@@ -327,7 +323,7 @@ export function FindCarePage() {
                 <div className="mt-4 flex flex-col gap-3">
                   {pharmacies.length === 0 ? (
                     <p className="py-8 text-center text-sm text-[#5A7399]">
-                      No in-stock pharmacies within 15 km.
+                      {t("findcareNoStock")}
                     </p>
                   ) : (
                     pharmacies.map((ph) => {
@@ -356,7 +352,7 @@ export function FindCarePage() {
                           </div>
                         </div>
                         <div className="mt-0.5 text-xs text-[#5A7399]">
-                          {ph.etaLabel} · {ph.distanceKm.toFixed(1)} km · Stock {ph.stock} ·{" "}
+                          {ph.etaLabel} · {ph.distanceKm.toFixed(1)} km · {t("findcareStock")} {ph.stock} ·{" "}
                           {ph.priceEtb} ETB
                         </div>
                         <div className="mt-2 flex gap-2">
@@ -371,7 +367,7 @@ export function FindCarePage() {
                                   : "#1A73E8",
                             }}
                           >
-                            {routeActive && selectedMapId === mid ? "On route" : "Start"}
+                            {routeActive && selectedMapId === mid ? t("findcareOnRoute") : t("findcareStart")}
                           </button>
                           <button
                             type="button"
@@ -379,7 +375,7 @@ export function FindCarePage() {
                             onClick={() => onReserveClick(ph)}
                             className="rounded-md border border-[#E8EEF5] px-3 py-1.5 text-xs font-medium text-[#5A7399]"
                           >
-                            {reserving === ph.facilityId ? "…" : "Reserve"}
+                            {reserving === ph.facilityId ? "..." : t("findcareReserve")}
                           </button>
                         </div>
                       </div>
@@ -404,7 +400,7 @@ export function FindCarePage() {
             {hasLab && (
               <>
                 <label className="mt-4 block text-xs font-semibold uppercase text-[#5A7399]">
-                  Procedure / machine
+                  {t("findcareProcedureMachine")}
                 </label>
                 <select
                   value={equipment}
@@ -453,7 +449,7 @@ export function FindCarePage() {
                           className="rounded-md px-3 py-1.5 text-xs font-semibold text-white"
                           style={{ background: "#1D6FE8" }}
                         >
-                          Start
+                          {t("findcareStart")}
                         </button>
                         <button
                           type="button"
@@ -461,7 +457,7 @@ export function FindCarePage() {
                           onClick={() => requestLab(f)}
                           className="rounded-md border border-[#1D6FE8] px-3 py-1.5 text-xs font-semibold text-[#1D6FE8]"
                         >
-                          {labRequesting === f.facilityId ? "…" : "Request"}
+                          {labRequesting === f.facilityId ? "..." : t("findcareRequest")}
                         </button>
                       </div>
                     </div>
@@ -480,7 +476,7 @@ export function FindCarePage() {
         >
           <div className="w-full max-w-md rounded-2xl bg-white p-5">
             <div className="flex justify-between">
-              <h3 className="font-bold text-[#0F1B35]">Pay to reserve</h3>
+              <h3 className="font-bold text-[#0F1B35]">{t("findcarePayToReserve")}</h3>
               <button type="button" onClick={() => setPayModal(null)} aria-label="Close">
                 <X size={20} />
               </button>
@@ -512,7 +508,7 @@ export function FindCarePage() {
               style={{ background: "linear-gradient(135deg, #1D6FE8, #0FB8C3)" }}
             >
               <CreditCard size={18} />
-              Confirm payment
+              {t("findcareConfirmPayment")}
             </button>
           </div>
         </div>

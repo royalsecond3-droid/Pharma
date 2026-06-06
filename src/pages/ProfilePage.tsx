@@ -9,10 +9,12 @@ import { useAuth } from "@/context/AuthContext";
 import { formatFinDisplay } from "@/lib/fayda";
 import { SUBSCRIPTION_PLANS } from "@/data/subscriptionPlans";
 import type { SubscriptionPlanId } from "@/types/subscription";
+import { useLanguage } from "@/context/LanguageContext";
 
 export function ProfilePage() {
   const navigate = useNavigate();
   const { user, faydaFin, logout, refreshUser } = useAuth();
+  const { t } = useLanguage();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -46,9 +48,9 @@ export function ProfilePage() {
         phone: phone.trim() || undefined,
       });
       await refreshUser();
-      setMessage("Profile saved");
+      setMessage(t("profileSaved"));
     } catch {
-      setMessage("Could not save profile");
+      setMessage(t("profileSaveFailed"));
     } finally {
       setSaving(false);
     }
@@ -84,7 +86,7 @@ export function ProfilePage() {
         </div>
         <div className="flex flex-col items-center gap-2">
           <div style={{ color: "#fff", fontSize: 18, fontWeight: 700 }}>
-            {user?.fullName ?? "Patient"}
+            {user?.fullName ?? t("navProfile")}
           </div>
           {isProAccount(planId) && (
             <ProBadge planId={planId} size="md" showPlanName />
@@ -124,11 +126,11 @@ export function ProfilePage() {
           </div>
           <div className="text-xs opacity-90">
             {planId === "family"
-              ? "Family Core · 4 linked profiles · annual billing"
-              : "Manage subscription · Pay with Telebirr, CBE, Chapa"}
+              ? t("profileFamilyCore")
+              : t("profileManageSub")}
           </div>
         </div>
-        <span className="text-xs font-bold text-white">Upgrade →</span>
+        <span className="text-xs font-bold text-white">{t("profileUpgrade")} →</span>
       </Link>
 
       <form
@@ -144,14 +146,14 @@ export function ProfilePage() {
         <div className="mb-4 flex items-center gap-2">
           <IdCard size={16} color="#1D6FE8" />
           <span style={{ fontSize: 13, fontWeight: 700, color: "#0F1B35" }}>
-            Personal details
+            {t("profilePersonalDetails")}
           </span>
         </div>
 
         {[
-          { label: "Full name", value: fullName, set: setFullName, type: "text" },
-          { label: "Email", value: email, set: setEmail, type: "email" },
-          { label: "Phone", value: phone, set: setPhone, type: "tel" },
+          { label: t("profileFullName"), value: fullName, set: setFullName, type: "text" },
+          { label: t("profileEmail"), value: email, set: setEmail, type: "email" },
+          { label: t("profilePhone"), value: phone, set: setPhone, type: "tel" },
         ].map((field) => (
           <div key={field.label} className="mb-4">
             <label
@@ -189,7 +191,7 @@ export function ProfilePage() {
           <p
             style={{
               fontSize: 12,
-              color: message.includes("saved") ? "#10B981" : "#E53E3E",
+              color: message === t("profileSaved") ? "#10B981" : "#E53E3E",
               marginBottom: 12,
             }}
           >
@@ -212,7 +214,7 @@ export function ProfilePage() {
             cursor: saving ? "wait" : "pointer",
           }}
         >
-          {saving ? "Saving…" : "Save profile"}
+          {saving ? t("profileSaving") : t("profileSave")}
         </button>
       </form>
 
@@ -222,8 +224,7 @@ export function ProfilePage() {
       >
         <Shield size={14} color="#5A7399" style={{ flexShrink: 0, marginTop: 2 }} />
         <p style={{ fontSize: 11, color: "#5A7399", lineHeight: 1.5, margin: 0 }}>
-          Your account is linked to Fayda National ID. Prescriptions, payments, and
-          schedules are stored securely in the Aura Care platform.
+          {t("profileSecureNote")}
         </p>
       </div>
 
@@ -243,7 +244,7 @@ export function ProfilePage() {
         }}
       >
         <LogOut size={18} />
-        Log out
+        {t("profileLogout")}
       </button>
     </div>
   );

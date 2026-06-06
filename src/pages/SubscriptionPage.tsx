@@ -22,11 +22,13 @@ import type {
   UserSubscription,
 } from "@/types/subscription";
 import { formatFinDisplay } from "@/lib/fayda";
+import { useLanguage } from "@/context/LanguageContext";
 
 const METHODS: PaymentMethodType[] = ["telebirr", "cbe_birr", "chapa", "card"];
 
 export function SubscriptionPage() {
   const { faydaFin, user } = useAuth();
+  const { t } = useLanguage();
   const [tab, setTab] = useState<"plans" | "billing">("plans");
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [transactions, setTransactions] = useState<PaymentTransaction[]>([]);
@@ -90,7 +92,7 @@ export function SubscriptionPage() {
     setPaying(true);
     try {
       await api.startSubscriptionTrial(faydaFin, "care_plus");
-      setMessage("14-day Care Plus trial started — no charge today");
+      setMessage("14-day Care Plus trial started - no charge today");
       refresh();
     } finally {
       setPaying(false);
@@ -116,8 +118,8 @@ export function SubscriptionPage() {
           <ChevronLeft size={20} color="#1D6FE8" />
         </Link>
         <div>
-          <h1 className="text-lg font-bold text-[#0F1B35]">Subscription</h1>
-          <p className="text-xs text-[#5A7399]">Pay in ETB · Telebirr, CBE, Chapa & card</p>
+          <h1 className="text-lg font-bold text-[#0F1B35]">{t("subTitle")}</h1>
+          <p className="text-xs text-[#5A7399]">{t("subSubtitle")}</p>
         </div>
       </div>
 
@@ -136,15 +138,15 @@ export function SubscriptionPage() {
             <span className="text-sm font-bold">{currentPlan.name}</span>
             {subscription.status === "trialing" && (
               <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold">
-                TRIAL
+                {t("subTrial")}
               </span>
             )}
           </div>
           <p className="mt-1 text-xs opacity-90">
             {subscription.status === "cancelled"
-              ? "Cancels at period end"
-              : `Renews ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`}
-            {subscription.autoRenew ? " · Auto-renew on" : " · Auto-renew off"}
+              ? t("subCancelsAtEnd")
+              : `${t("subRenews")} ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`}
+            {subscription.autoRenew ? ` · ${t("subAutoOn")}` : ` · ${t("subAutoOff")}`}
             {subscription.planId === "family" && subscription.billingCycle === "annual"
               ? " · 8,990 ETB/yr"
               : ""}
@@ -154,9 +156,9 @@ export function SubscriptionPage() {
 
       {subscription?.planId === "family" && familyMembers.length > 0 && (
         <div className="mx-5 mt-4 rounded-2xl border border-[rgba(108,99,255,0.2)] bg-white p-4">
-          <h2 className="text-sm font-bold text-[#0F1B35]">Family Core members (4/4)</h2>
+          <h2 className="text-sm font-bold text-[#0F1B35]">{t("subFamilyMembers")}</h2>
           <p className="mt-1 text-xs text-[#5A7399]">
-            One subscription covers all linked Fayda profiles
+            {t("subFamilyCovers")}
           </p>
           <ul className="mt-3 flex flex-col gap-2">
             {familyMembers.map((m) => (
@@ -176,7 +178,7 @@ export function SubscriptionPage() {
                 </div>
                 {m.isPrimary && (
                   <span className="rounded-full bg-[#6C63FF] px-2 py-0.5 text-[10px] font-bold text-white">
-                    Primary
+                    {t("subPrimary")}
                   </span>
                 )}
               </li>
@@ -186,19 +188,19 @@ export function SubscriptionPage() {
       )}
 
       <div className="mx-5 mt-4 flex gap-1 rounded-xl bg-[#F4F8FF] p-1">
-        {(["plans", "billing"] as const).map((t) => (
+        {(["plans", "billing"] as const).map((section) => (
           <button
-            key={t}
+            key={section}
             type="button"
-            onClick={() => setTab(t)}
+            onClick={() => setTab(section)}
             className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2.5 text-sm font-semibold"
             style={{
-              background: tab === t ? "#fff" : "transparent",
-              color: tab === t ? "#1D6FE8" : "#5A7399",
+              background: tab === section ? "#fff" : "transparent",
+              color: tab === section ? "#1D6FE8" : "#5A7399",
             }}
           >
-            {t === "plans" ? <Sparkles size={14} /> : <History size={14} />}
-            {t === "plans" ? "Plans & pay" : "Billing"}
+            {section === "plans" ? <Sparkles size={14} /> : <History size={14} />}
+            {section === "plans" ? t("subPlansPay") : t("subBilling")}
           </button>
         ))}
       </div>
@@ -212,7 +214,7 @@ export function SubscriptionPage() {
             className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#6C63FF] py-3 text-sm font-bold text-[#6C63FF]"
           >
             <Zap size={16} />
-            Try Care Plus free for 14 days
+            {t("subTryFree")}
           </button>
 
           <div className="mt-4 flex gap-2">
@@ -227,7 +229,7 @@ export function SubscriptionPage() {
                   color: cycle === c ? "#fff" : "#5A7399",
                 }}
               >
-                {c === "monthly" ? "Monthly" : "Annual (save ~17%)"}
+                {c === "monthly" ? t("subMonthly") : t("subAnnual")}
               </button>
             ))}
           </div>
@@ -280,7 +282,7 @@ export function SubscriptionPage() {
           </div>
 
           <h2 className="mb-2 mt-6 text-xs font-bold uppercase tracking-wide text-[#5A7399]">
-            Payment method
+            {t("subPaymentMethod")}
           </h2>
           <div className="grid grid-cols-2 gap-2">
             {METHODS.map((m) => {
@@ -306,7 +308,7 @@ export function SubscriptionPage() {
           {method !== "card" && selectedPlan !== "free" && (
             <div className="mt-4">
               <label className="text-xs font-semibold uppercase text-[#5A7399]">
-                Wallet phone number
+                {t("subWalletPhone")}
               </label>
               <input
                 value={phone}
@@ -327,7 +329,7 @@ export function SubscriptionPage() {
                 <input placeholder="MM/YY" className="rounded-lg border px-3 py-2.5 text-sm" />
                 <input placeholder="CVV" className="rounded-lg border px-3 py-2.5 text-sm" />
               </div>
-              <p className="text-[10px] text-[#5A7399]">Demo only — no real charge</p>
+              <p className="text-[10px] text-[#5A7399]">{t("subDemoOnly")}</p>
             </div>
           )}
 
@@ -343,10 +345,10 @@ export function SubscriptionPage() {
           >
             <CreditCard size={18} />
             {paying
-              ? "Processing payment…"
+              ? t("subProcessing")
               : selectedPlan === "free"
-                ? "Switch to Free"
-                : `Pay ${price.toLocaleString()} ETB`}
+                ? t("subSwitchFree")
+                : `${t("subPayPrefix")} ${price.toLocaleString()} ETB`}
           </button>
 
           {subscription && subscription.planId !== "free" && subscription.autoRenew && (
@@ -355,7 +357,7 @@ export function SubscriptionPage() {
               onClick={cancelRenew}
               className="mt-3 w-full text-center text-xs font-semibold text-[#5A7399]"
             >
-              Turn off auto-renew
+              {t("subTurnOffRenew")}
             </button>
           )}
         </div>
@@ -364,7 +366,7 @@ export function SubscriptionPage() {
       {tab === "billing" && (
         <div className="mt-4 px-5">
           {transactions.length === 0 ? (
-            <p className="py-12 text-center text-sm text-[#5A7399]">No payments yet</p>
+            <p className="py-12 text-center text-sm text-[#5A7399]">{t("subNoPayments")}</p>
           ) : (
             <ul className="flex flex-col gap-3">
               {transactions.map((tx) => (

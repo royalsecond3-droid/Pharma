@@ -1,11 +1,14 @@
 import {
   Activity,
   Brain,
+  BookOpen,
   Building2,
+  FileText,
   Pill,
   Shield,
   Stethoscope,
   User,
+  Video,
 } from "lucide-react";
 import { Link } from "react-router";
 import { APP_NAME, APP_TAGLINE, LOGO_SRC } from "@/lib/brand";
@@ -41,6 +44,33 @@ const PORTALS = [
   },
 ] as const;
 
+const BLOG_NAV_ITEMS = [
+  { href: "#blog-all", label: "All" },
+  { href: "#blog-videos", label: "Teaching Videos" },
+  { href: "#blog-posts", label: "Blog Posts" },
+  { href: "#blog-tech", label: "Tech & Updates" },
+] as const;
+
+const BLOG_CONTENT = {
+  all: [
+    "Medication safety basics for caregivers",
+    "How to read your digital prescription",
+    "Using Find Care to compare pharmacy stock",
+  ],
+  videos: [
+    "Video: How to set reminders in 60 seconds",
+    "Video: SOS quick steps for family support",
+  ],
+  posts: [
+    "Post: Understanding dosage, frequency, and timing",
+    "Post: 7 mistakes to avoid with long-term medication plans",
+  ],
+  tech: [
+    "Update: New Fayda verification flow",
+    "Update: Faster map loading for Find Care",
+  ],
+} as const;
+
 export function PortalLanding() {
   return (
     <div className="min-h-dvh bg-background">
@@ -67,6 +97,72 @@ export function PortalLanding() {
           </p>
         </div>
       </header>
+
+      <section className="border-b border-border bg-white/95 px-6 py-3 backdrop-blur">
+        <div className="mx-auto flex max-w-5xl flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-2 text-sm font-bold text-foreground">
+            <BookOpen size={16} color="#1D6FE8" />
+            Blog Navigator
+          </div>
+          <nav className="flex flex-wrap gap-2" aria-label="Blog navigation">
+            {BLOG_NAV_ITEMS.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="rounded-full border border-[rgba(29,111,232,0.18)] px-3 py-1.5 text-xs font-semibold text-[#1D6FE8] no-underline transition hover:bg-[#1D6FE8] hover:text-white"
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-6 pt-8">
+        <div className="grid gap-3 md:grid-cols-2">
+          <article id="blog-all" className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="mb-3 text-sm font-bold text-foreground">All Highlights</h3>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              {BLOG_CONTENT.all.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </article>
+
+          <article id="blog-videos" className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
+              <Video size={15} color="#1D6FE8" />
+              Teaching Videos
+            </h3>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              {BLOG_CONTENT.videos.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </article>
+
+          <article id="blog-posts" className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
+              <FileText size={15} color="#0FB8C3" />
+              Blog Posts
+            </h3>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              {BLOG_CONTENT.posts.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </article>
+
+          <article id="blog-tech" className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="mb-3 text-sm font-bold text-foreground">Tech & Updates</h3>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              {BLOG_CONTENT.tech.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </article>
+        </div>
+      </section>
 
       <section className="mx-auto max-w-5xl px-6 py-10">
         <h2 className="mb-2 text-center text-lg font-bold text-foreground">
