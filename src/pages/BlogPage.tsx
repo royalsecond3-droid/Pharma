@@ -3,10 +3,13 @@ import {
   BookOpen,
   Bookmark,
   BookmarkCheck,
+  Bot,
   FileText,
   PlayCircle,
   Search,
+  Send,
   Video,
+  X,
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -21,6 +24,11 @@ type BlogItem = {
   tags: string[];
   videoUrl?: string;
   tips: string[];
+};
+
+type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
 };
 
 const BLOG_ITEMS: BlogItem[] = [
@@ -88,6 +96,57 @@ const BLOG_ITEMS: BlogItem[] = [
   },
 ];
 
+const GEMINI_MODEL = import.meta.env.VITE_GEMINI_MODEL ?? "gemini-1.5-flash";
+
+async function askGemini(params: {
+  apiKey: string;
+  prompt: string;
+  context: string;
+  history: ChatMessage[];
+}): Promise<string> {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${params.apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [
+            {
+              text: `You are a friendly patient education assistant for a medical blog page. Use simple language, keep answers short and useful, and never claim to replace a doctor. If the user mentions urgent symptoms, advise emergency care immediately. Use the supplied blog context when relevant.\n\nBlog context:\n${params.context}`,
+            },
+          ],
+        },
+        contents: [
+          ...params.history.map((message) => ({
+            role: message.role,
+            parts: [{ text: message.content }],
+          })),
+          {
+            role: "user",
+            parts: [{ text: params.prompt }],
+          },
+        ],
+        generationConfig: { temperature: 0.4, maxOutputTokens: 300 },
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    const message = (body as { error?: { message?: string } }).error?.message;
+    throw new Error(message ?? "Gemini request failed");
+  }
+
+  const data = (await response.json()) as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+  };
+
+  const text = data.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("").trim();
+  if (!text) throw new Error("Gemini returned an empty response");
+  return text;
+}
+
 export function BlogPage() {
   const { t } = useLanguage();
   const [query, setQuery] = useState("");
@@ -95,6 +154,16 @@ export function BlogPage() {
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      role: "assistant",
+      content: "Ask me about the blog videos, medication routines, caregiver tips, or how to understand a post.",
+    },
+  ]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -106,40 +175,59 @@ export function BlogPage() {
     });
   }, [query, tab]);
 
+  const blogContext = useMemo(
+    () =>
+      BLOG_ITEMS.map(
+        (item) => `${item.title} (${item.type}) - ${item.summary}. Tags: ${item.tags.join(", ")}. Tips: ${item.tips.join(" | ")}`,
+      ).join("\n"),
+    [],
+  );
+
   const toggleSave = (id: string) => {
-    setSavedIds((prev) =>
-      prev.includes(id) ? prev.filter((savedId) => savedId !== id) : [...prev, id],
-    );
+    setSavedIds((prev) => (prev.includes(id) ? prev.filter((savedId) => savedId !== id) : [...prev, id]));
+  };
+
+  const sendChat = async () => {
+    const prompt = chatInput.trim();
+    if (!prompt || chatLoading) return;
+
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
+    if (!apiKey) {
+      setChatError("Add VITE_GEMINI_API_KEY in your .env file to enable Gemini chat.");
+      return;
+    }
+
+    setChatError(null);
+    setChatLoading(true);
+    setChatMessages((prev) => [...prev, { role: "user", content: prompt }]);
+    setChatInput("");
+
+    try {
+      const reply = await askGemini({ apiKey, prompt, context: blogContext, history: chatMessages.slice(-6) });
+      setChatMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+    } catch (error) {
+      setChatError(error instanceof Error ? error.message : "Gemini chat is unavailable right now.");
+    } finally {
+      setChatLoading(false);
+    }
   };
 
   return (
     <div className="px-5 pb-7 pt-5">
-      <div
-        className="rounded-2xl px-4 py-4"
-        style={{ background: "linear-gradient(160deg, #1D6FE8 0%, #0FB8C3 100%)" }}
-      >
+      <div className="rounded-2xl px-4 py-4" style={{ background: "linear-gradient(160deg, #1D6FE8 0%, #0FB8C3 100%)" }}>
         <div className="flex items-center gap-2">
           <BookOpen size={18} color="#fff" />
           <h1 className="text-xl font-bold text-white">{t("blogTitle")}</h1>
         </div>
         <p className="mt-1 text-xs text-white/85">{t("blogSubtitle")}</p>
         <div className="mt-3 flex gap-2 text-[11px]">
-          <span className="rounded-full bg-white/20 px-2 py-1 font-semibold text-white">
-            {BLOG_ITEMS.filter((item) => item.type === "video").length} videos
-          </span>
-          <span className="rounded-full bg-white/20 px-2 py-1 font-semibold text-white">
-            {BLOG_ITEMS.filter((item) => item.type === "post").length} posts
-          </span>
-          <span className="rounded-full bg-white/20 px-2 py-1 font-semibold text-white">
-            {savedIds.length} saved
-          </span>
+          <span className="rounded-full bg-white/20 px-2 py-1 font-semibold text-white">{BLOG_ITEMS.filter((item) => item.type === "video").length} videos</span>
+          <span className="rounded-full bg-white/20 px-2 py-1 font-semibold text-white">{BLOG_ITEMS.filter((item) => item.type === "post").length} posts</span>
+          <span className="rounded-full bg-white/20 px-2 py-1 font-semibold text-white">{savedIds.length} saved</span>
         </div>
       </div>
 
-      <div
-        className="mt-4 flex items-center gap-2 rounded-xl px-3 py-2"
-        style={{ border: "1px solid rgba(29,111,232,0.14)", background: "#fff" }}
-      >
+      <div className="mt-4 flex items-center gap-2 rounded-xl px-3 py-2" style={{ border: "1px solid rgba(29,111,232,0.14)", background: "#fff" }}>
         <Search size={15} color="#5A7399" />
         <input
           type="search"
@@ -147,14 +235,7 @@ export function BlogPage() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("blogSearchPlaceholder")}
           aria-label={t("blogSearchPlaceholder")}
-          style={{
-            flex: 1,
-            border: "none",
-            outline: "none",
-            fontSize: 13,
-            color: "#0F1B35",
-            background: "transparent",
-          }}
+          style={{ flex: 1, border: "none", outline: "none", fontSize: 13, color: "#0F1B35", background: "transparent" }}
         />
       </div>
 
@@ -169,11 +250,7 @@ export function BlogPage() {
             type="button"
             onClick={() => setTab(item.id)}
             className="rounded-lg py-2 text-xs font-bold"
-            style={{
-              border: "1px solid rgba(29,111,232,0.16)",
-              background: tab === item.id ? "#1D6FE8" : "#fff",
-              color: tab === item.id ? "#fff" : "#1D6FE8",
-            }}
+            style={{ border: "1px solid rgba(29,111,232,0.16)", background: tab === item.id ? "#1D6FE8" : "#fff", color: tab === item.id ? "#fff" : "#1D6FE8" }}
           >
             {item.label}
           </button>
@@ -182,48 +259,24 @@ export function BlogPage() {
 
       <div className="mt-4 flex flex-col gap-3">
         {filtered.length === 0 ? (
-          <p className="rounded-xl bg-white px-3 py-4 text-center text-xs text-[#5A7399]">
-            {t("blogNoResults")}
-          </p>
+          <p className="rounded-xl bg-white px-3 py-4 text-center text-xs text-[#5A7399]">{t("blogNoResults")}</p>
         ) : (
           filtered.map((item) => (
-            <article
-              key={item.id}
-              className="rounded-xl border bg-white px-3 py-3"
-              style={{ borderColor: "rgba(29,111,232,0.12)" }}
-            >
+            <article key={item.id} className="rounded-xl border bg-white px-3 py-3" style={{ borderColor: "rgba(29,111,232,0.12)" }}>
               <div className="mb-1 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  {item.type === "video" ? (
-                    <Video size={14} color="#1D6FE8" />
-                  ) : (
-                    <FileText size={14} color="#0FB8C3" />
-                  )}
+                  {item.type === "video" ? <Video size={14} color="#1D6FE8" /> : <FileText size={14} color="#0FB8C3" />}
                   <span className="text-[11px] font-semibold text-[#5A7399]">{item.category}</span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => toggleSave(item.id)}
-                  className="rounded-md p-1"
-                  style={{ background: "#F4F8FF" }}
-                  aria-label="Save post"
-                >
-                  {savedIds.includes(item.id) ? (
-                    <BookmarkCheck size={14} color="#1D6FE8" />
-                  ) : (
-                    <Bookmark size={14} color="#5A7399" />
-                  )}
+                <button type="button" onClick={() => toggleSave(item.id)} className="rounded-md p-1" style={{ background: "#F4F8FF" }} aria-label="Save post">
+                  {savedIds.includes(item.id) ? <BookmarkCheck size={14} color="#1D6FE8" /> : <Bookmark size={14} color="#5A7399" />}
                 </button>
               </div>
               <div className="text-sm font-semibold text-[#0F1B35]">{item.title}</div>
               <p className="mt-1 text-xs text-[#5A7399]">{item.summary}</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {item.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                    style={{ background: "#F4F8FF", color: "#5A7399" }}
-                  >
+                  <span key={tag} className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: "#F4F8FF", color: "#5A7399" }}>
                     {tag}
                   </span>
                 ))}
@@ -236,22 +289,11 @@ export function BlogPage() {
               {item.type === "video" && item.videoUrl && (
                 <div className="mt-3 rounded-xl p-2" style={{ background: "#F4F8FF" }}>
                   {playingId === item.id ? (
-                    <video
-                      controls
-                      autoPlay
-                      className="w-full rounded-lg"
-                      src={item.videoUrl}
-                      preload="metadata"
-                    >
+                    <video controls autoPlay className="w-full rounded-lg" src={item.videoUrl} preload="metadata">
                       Your browser does not support HTML video.
                     </video>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => setPlayingId(item.id)}
-                      className="flex w-full items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold text-white"
-                      style={{ background: "linear-gradient(135deg, #1D6FE8, #0FB8C3)" }}
-                    >
+                    <button type="button" onClick={() => setPlayingId(item.id)} className="flex w-full items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #1D6FE8, #0FB8C3)" }}>
                       <PlayCircle size={14} />
                       Run video here
                     </button>
@@ -259,12 +301,7 @@ export function BlogPage() {
                 </div>
               )}
 
-              <button
-                type="button"
-                onClick={() => setExpandedId((prev) => (prev === item.id ? null : item.id))}
-                className="mt-3 w-full rounded-lg border py-2 text-xs font-bold"
-                style={{ borderColor: "rgba(29,111,232,0.16)", color: "#1D6FE8" }}
-              >
+              <button type="button" onClick={() => setExpandedId((prev) => (prev === item.id ? null : item.id))} className="mt-3 w-full rounded-lg border py-2 text-xs font-bold" style={{ borderColor: "rgba(29,111,232,0.16)", color: "#1D6FE8" }}>
                 {expandedId === item.id ? "Hide quick tips" : "Show quick tips"}
               </button>
 
@@ -279,6 +316,62 @@ export function BlogPage() {
               )}
             </article>
           ))
+        )}
+      </div>
+
+      <div className="fixed bottom-24 right-4 z-40">
+        {!chatOpen ? (
+          <button type="button" onClick={() => setChatOpen(true)} className="flex h-14 w-14 items-center justify-center rounded-full text-white shadow-2xl" style={{ background: "linear-gradient(135deg, #1D6FE8, #0FB8C3)" }} aria-label="Open AI chat">
+            <Bot size={22} />
+          </button>
+        ) : null}
+
+        {chatOpen && (
+          <div className="absolute bottom-16 right-0 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-3xl border bg-white shadow-2xl" style={{ borderColor: "rgba(29,111,232,0.12)" }}>
+            <div className="flex items-start justify-between gap-3 border-b px-4 py-3" style={{ borderColor: "rgba(29,111,232,0.08)" }}>
+              <div className="flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: "#F4F8FF" }}>
+                  <Bot size={18} color="#1D6FE8" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-[#0F1B35]">AI Chat Assistant</div>
+                  <div className="text-[11px] text-[#5A7399]">Gemini help for blog questions</div>
+                </div>
+              </div>
+              <button type="button" onClick={() => setChatOpen(false)} className="rounded-full px-2 py-1 text-xs font-bold text-[#1D6FE8]" style={{ background: "#F4F8FF" }} aria-label="Close AI chat">
+                <X size={14} />
+              </button>
+            </div>
+
+            <div className="max-h-72 space-y-2 overflow-y-auto bg-[#F8FBFF] p-3">
+              {chatMessages.map((message, index) => (
+                <div
+                  key={`${message.role}-${index}`}
+                  className={`max-w-[92%] rounded-2xl px-3 py-2 text-xs leading-5 ${message.role === "user" ? "ml-auto bg-[#1D6FE8] text-white" : "bg-white text-[#0F1B35]"}`}
+                  style={{ border: message.role === "assistant" ? "1px solid rgba(29,111,232,0.12)" : undefined }}
+                >
+                  {message.content}
+                </div>
+              ))}
+              {chatLoading && <div className="max-w-[92%] rounded-2xl border border-dashed border-[#1D6FE8]/20 bg-white px-3 py-2 text-xs text-[#5A7399]">Thinking with Gemini...</div>}
+            </div>
+
+            {chatError && <p className="px-4 pt-2 text-xs text-[#C53030]">{chatError}</p>}
+
+            <div className="flex gap-2 border-t p-3" style={{ borderColor: "rgba(29,111,232,0.08)" }}>
+              <textarea
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Ask the AI..."
+                rows={2}
+                className="min-h-[52px] flex-1 resize-none rounded-xl border px-3 py-2 text-sm outline-none"
+                style={{ borderColor: "rgba(29,111,232,0.16)" }}
+              />
+              <button type="button" onClick={sendChat} disabled={chatLoading || !chatInput.trim()} className="inline-flex h-[52px] w-[52px] items-center justify-center rounded-xl text-white disabled:opacity-50" style={{ background: "linear-gradient(135deg, #1D6FE8, #0FB8C3)" }} aria-label="Send AI chat message">
+                <Send size={16} />
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>
