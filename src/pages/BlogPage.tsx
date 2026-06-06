@@ -31,67 +31,104 @@ type ChatMessage = {
   content: string;
 };
 
+function getYouTubeEmbedUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+    const videoId =
+      parsed.hostname.includes("youtu.be")
+        ? parsed.pathname.replace("/", "")
+        : parsed.searchParams.get("v");
+
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+  } catch {
+    return url;
+  }
+}
+
 const BLOG_ITEMS: BlogItem[] = [
   {
-    id: "b1",
-    title: "How to organize daily medication at home",
+    id: "b0b",
+    title: "Intermittent fasting: who should avoid it",
     type: "video",
-    category: "Teaching Video",
-    summary: "Simple routine for morning, noon, and evening medication safety.",
+    category: "Health Talk",
+    summary:
+      "Intermittent fasting has been practiced for a long time, but it is not for everyone.",
     duration: "4 min",
-    views: "4.2k",
-    tags: ["Medication", "Caregiver", "Routine"],
-    videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    views: "6.7k",
+    tags: ["Fasting", "Nutrition", "Safety"],
+    videoUrl: "https://youtu.be/AWKQNcHU2r4",
     tips: [
-      "Use one tray per day and label morning, noon, and night.",
-      "Set backup alarms when caregiver is away.",
-      "Mark doses immediately after taking medicine.",
+      "Intermittent fasting is not new; it has been practiced religiously and culturally for a long time.",
+      "Some people use it for weight management or chronic conditions.",
+      "Avoid intermittent fasting if you are under 18, pregnant, breastfeeding, or have certain medical problems.",
     ],
   },
   {
-    id: "b2",
-    title: "What dosage instructions really mean",
-    type: "post",
-    category: "Blog Post",
-    summary: "Understand dose, duration, and frequency from your prescription.",
-    duration: "3 min read",
-    views: "3.1k",
-    tags: ["Prescription", "Dose", "Safety"],
-    tips: [
-      "OD means once daily, BD means twice daily.",
-      "Finish full course even if symptoms improve.",
-      "Contact provider if side effects are severe.",
-    ],
-  },
-  {
-    id: "b3",
-    title: "Caregiver checklist for Alzheimer patients",
-    type: "post",
-    category: "Blog Post",
-    summary: "A weekly support checklist for memory care and medication adherence.",
-    duration: "5 min read",
-    views: "2.4k",
-    tags: ["Alzheimer", "Checklist", "Family"],
-    tips: [
-      "Track sleep, appetite, mood, and missed doses.",
-      "Keep emergency contacts visible at home.",
-      "Review medication changes each weekend.",
-    ],
-  },
-  {
-    id: "b4",
-    title: "Using SOS safely in urgent situations",
+    id: "b0a",
+    title: "Healthy food management",
     type: "video",
-    category: "Teaching Video",
-    summary: "When to trigger SOS and how your family gets notified quickly.",
-    duration: "2 min",
-    views: "5.8k",
-    tags: ["SOS", "Emergency", "Family"],
+    category: "Ermiyas Amelga",
+    summary:
+      "A practical talk about discipline, awareness, and consistency in healthy food management.",
+    duration: "5 min",
+    views: "8.9k",
+    tags: ["Nutrition", "Lifestyle", "Health"],
+    videoUrl: "https://youtu.be/r2L7iSHzESk",
+    tips: [
+      "Healthy food management is about taking control of your daily choices.",
+      "Food habits affect your energy, productivity, and long-term success.",
+      "Build a balanced lifestyle with discipline and consistency.",
+    ],
+  },
+  {
+    id: "b0",
+    title: "Where do you live? — In my body",
+    type: "video",
+    category: "Doctor Selam Aklilu",
+    summary:
+      "Many answer with a city, village, or country, but the first residence is the body: the correct answer is in my body.",
+    duration: "4 min",
+    views: "7.8k",
+    tags: ["Wellness", "Mindset", "Doctor Selam"],
     videoUrl: "https://samplelib.com/lib/preview/mp4/sample-5s.mp4",
     tips: [
-      "Use SOS for urgent health risk, not routine reminders.",
-      "Keep caregiver phone updated in your profile.",
-      "After SOS, remain in safe visible location.",
+      "Many people answer with a city, village, or country, but the deeper answer is the body.",
+      "Correct answer: in my body.",
+      "Listen to Doctor Selam's brilliant description of wellness.",
+    ],
+  },
+  {
+    id: "b5",
+    title: "Healthy spine structure and daily back care",
+    type: "video",
+    category: "Doctor Selam Aklilu",
+    summary:
+      "Listen to this message from Dr Selam Aklilu on keeping a healthy spine structure and daily practices for a healthy back.",
+    duration: "4 min",
+    views: "6.4k",
+    tags: ["Spine", "Back Care", "Doctor Selam"],
+    videoUrl: "https://samplelib.com/lib/preview/mp4/sample-5s.mp4",
+    tips: [
+      "Keep good posture when sitting, walking, and using your phone.",
+      "Move gently every day to support your spine and back muscles.",
+      "If pain lasts or worsens, get proper medical advice.",
+    ],
+  },
+  {
+    id: "b6",
+    title: "Avoid inaccurate medical assumptions",
+    type: "video",
+    category: "Doctor Selam Aklilu",
+    summary:
+      "Advice from Dr Selam Aklilu on avoiding inaccurate medical assumptions and doing proper research before conclusions.",
+    duration: "3 min",
+    views: "5.1k",
+    tags: ["Medical Facts", "Research", "Doctor Selam"],
+    videoUrl: "https://samplelib.com/lib/preview/mp4/sample-5s.mp4",
+    tips: [
+      "Do not guess a diagnosis from a few symptoms alone.",
+      "Check reliable sources and ask trained professionals.",
+      "Proper research helps prevent dangerous misinformation.",
     ],
   },
 ];
@@ -151,7 +188,6 @@ export function BlogPage() {
   const { t } = useLanguage();
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<"all" | "video" | "post">("all");
-  const [playingId, setPlayingId] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
@@ -286,17 +322,24 @@ export function BlogPage() {
                 <span>{item.views} views</span>
               </div>
 
+              <div className="mt-3 rounded-xl border px-3 py-2 text-xs leading-5" style={{ borderColor: "rgba(29,111,232,0.14)", background: "#F8FBFF", color: "#5A7399" }}>
+                {item.summary}
+              </div>
+
               {item.type === "video" && item.videoUrl && (
                 <div className="mt-3 rounded-xl p-2" style={{ background: "#F4F8FF" }}>
-                  {playingId === item.id ? (
-                    <video controls autoPlay className="w-full rounded-lg" src={item.videoUrl} preload="metadata">
+                  {item.videoUrl.includes("youtu") ? (
+                    <iframe
+                      title={item.title}
+                      className="aspect-video w-full rounded-lg"
+                      src={getYouTubeEmbedUrl(item.videoUrl)}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video controls className="w-full rounded-lg" src={item.videoUrl} preload="metadata">
                       Your browser does not support HTML video.
                     </video>
-                  ) : (
-                    <button type="button" onClick={() => setPlayingId(item.id)} className="flex w-full items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #1D6FE8, #0FB8C3)" }}>
-                      <PlayCircle size={14} />
-                      Run video here
-                    </button>
                   )}
                 </div>
               )}
