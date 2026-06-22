@@ -1,177 +1,51 @@
-import { useState } from "react";
-import { api } from "@/api/client";
-import { FaydaLookup } from "@/components/portal/FaydaLookup";
+import { useEffect, useState } from "react";
+import { Award, Clock, MapPin, TrendingUp, Users } from "lucide-react";
+import { api } from "@/api/truckngoClient";
 import { useStaffAuth } from "@/context/StaffAuthContext";
-import { formatFinDisplay } from "@/lib/fayda";
+import type { RouteSummary } from "@/types/truckngo";
 
 export function DoctorRecordsPage() {
   const { staff } = useStaffAuth();
-  const [patientFin, setPatientFin] = useState<string | null>(null);
-  const [chiefComplaint, setChiefComplaint] = useState("");
-  const [diagnosis, setDiagnosis] = useState("");
-  const [notes, setNotes] = useState("");
-  const [systolic, setSystolic] = useState("");
-  const [diastolic, setDiastolic] = useState("");
-  const [heartRate, setHeartRate] = useState("");
-  const [contraTags, setContraTags] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [summary, setSummary] = useState<RouteSummary | null>(null);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!staff || !patientFin || !notes.trim()) return;
-    setLoading(true);
-    setMessage(null);
-    try {
-      await api.doctorAddHealthRecord(staff.id, {
-        patientFin,
-        chiefComplaint: chiefComplaint || undefined,
-        diagnosis: diagnosis || undefined,
-        notes,
-      });
-      const auraResult = await api.addMedicalLog(patientFin, {
-        source: "manual_form",
-        metrics: {
-          systolic: systolic ? Number(systolic) : undefined,
-          diastolic: diastolic ? Number(diastolic) : undefined,
-          heartRate: heartRate ? Number(heartRate) : undefined,
-        },
-        condition: diagnosis || chiefComplaint || "Clinical visit",
-        facilityId: staff.facilityName.replace(/\s+/g, "-").toLowerCase().slice(0, 24) || "hosp-addis-01",
-        contraindicationTags: contraTags
-          ? contraTags.split(",").map((t) => t.trim().toLowerCase())
-          : [],
-      });
-      if (auraResult.duplicate) {
-        setMessage("Duplicate entry blocked — identical timestamp & condition exists");
-        return;
-      }
-      setMessage("Health record saved · vitals analyzed for patient insights");
-      setChiefComplaint("");
-      setDiagnosis("");
-      setNotes("");
-      setSystolic("");
-      setDiastolic("");
-      setHeartRate("");
-      setContraTags("");
-    } catch (e) {
-      setMessage(e instanceof Error ? e.message : "Failed to save record");
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    if (!staff) return;
+    api.getRouteSummary(staff.id).then((r) => setSummary(r.summary));
+  }, [staff]);
+
+  if (!summary) return <p className="text-sm text-muted-foreground">Loading summary...</p>;
 
   return (
-    <div className="max-w-xl">
-      <h1 className="text-2xl font-bold text-foreground">Electronic health records</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Add consultation notes linked to patient Fayda ID
-      </p>
+    <div>
+      <h1 className="text-2xl font-bold">End of Route Summary</h1>
+      <p className="mt-1 text-sm text-muted-foreground">Today&apos;s collection performance</p>
 
-      <div className="mt-6">
-        <FaydaLookup onLookup={setPatientFin} buttonLabel="Select patient" />
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {[
+          { icon: MapPin, label: "Distance traveled", value: `${summary.distanceKm} km`, color: "#0F766E" },
+          { icon: Users, label: "Households served", value: String(summary.householdsServed), color: "#14B8A6" },
+          { icon: TrendingUp, label: "Collections completed", value: String(summary.collectionsCompleted), color: "#22C55E" },
+          { icon: Award, label: "Efficiency score", value: `${summary.efficiencyScore}%`, color: "#F59E0B" },
+          { icon: Clock, label: "Duration", value: `${summary.durationMinutes} min`, color: "#64748B" },
+        ].map((c) => (
+          <div key={c.label} className="rounded-2xl border border-border bg-card p-5">
+            <c.icon size={22} style={{ color: c.color }} />
+            <div className="mt-3 text-2xl font-bold">{c.value}</div>
+            <div className="text-sm text-muted-foreground">{c.label}</div>
+          </div>
+        ))}
       </div>
 
-      {patientFin && (
-        <form onSubmit={submit} className="mt-6 space-y-4 rounded-2xl border border-border bg-card p-5">
-          <p className="text-sm font-semibold">FIN · {formatFinDisplay(patientFin)}</p>
-          <div>
-            <label className="text-xs font-semibold uppercase text-muted-foreground">
-              Chief complaint
-            </label>
-            <input
-              value={chiefComplaint}
-              onChange={(e) => setChiefComplaint(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-border px-4 py-2.5 text-sm"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-semibold uppercase text-muted-foreground">
-              Diagnosis
-            </label>
-            <input
-              value={diagnosis}
-              onChange={(e) => setDiagnosis(e.target.value)}
-              placeholder="e.g. Alzheimer's disease — early stage"
-              className="mt-1 w-full rounded-xl border border-border px-4 py-2.5 text-sm"
-            />
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="text-xs font-semibold uppercase text-muted-foreground">
-                Systolic
-              </label>
-              <input
-                type="number"
-                value={systolic}
-                onChange={(e) => setSystolic(e.target.value)}
-                placeholder="120"
-                className="mt-1 w-full rounded-xl border border-border px-3 py-2.5 text-sm"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold uppercase text-muted-foreground">
-                Diastolic
-              </label>
-              <input
-                type="number"
-                value={diastolic}
-                onChange={(e) => setDiastolic(e.target.value)}
-                placeholder="80"
-                className="mt-1 w-full rounded-xl border border-border px-3 py-2.5 text-sm"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold uppercase text-muted-foreground">
-                Heart rate
-              </label>
-              <input
-                type="number"
-                value={heartRate}
-                onChange={(e) => setHeartRate(e.target.value)}
-                placeholder="72"
-                className="mt-1 w-full rounded-xl border border-border px-3 py-2.5 text-sm"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="text-xs font-semibold uppercase text-muted-foreground">
-              Safety flags (comma-separated, e.g. pacemaker)
-            </label>
-            <input
-              value={contraTags}
-              onChange={(e) => setContraTags(e.target.value)}
-              placeholder="pacemaker, metallic implant"
-              className="mt-1 w-full rounded-xl border border-border px-4 py-2.5 text-sm"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-semibold uppercase text-muted-foreground">
-              Clinical notes *
-            </label>
-            <textarea
-              required
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={5}
-              className="mt-1 w-full rounded-xl border border-border px-4 py-2.5 text-sm"
-            />
-          </div>
-          {message && (
-            <p className={`text-sm ${message.includes("saved") ? "text-green-600" : "text-destructive"}`}>
-              {message}
-            </p>
-          )}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-xl py-3 text-sm font-bold text-white"
-            style={{ background: "#6C63FF" }}
-          >
-            {loading ? "Saving…" : "Save to EHR"}
-          </button>
-        </form>
-      )}
+      <div
+        className="mt-8 rounded-2xl p-6 text-center text-white"
+        style={{ background: "linear-gradient(135deg, #0F766E, #22C55E)" }}
+      >
+        <div className="text-5xl font-bold">{summary.efficiencyScore}%</div>
+        <div className="mt-2 text-sm opacity-90">Route efficiency score</div>
+        <p className="mt-4 text-xs opacity-75">
+          Great work! Your performance contributes to city-wide collection success.
+        </p>
+      </div>
     </div>
   );
 }

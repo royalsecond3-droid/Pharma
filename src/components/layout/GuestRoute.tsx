@@ -6,7 +6,7 @@ export function GuestRoute() {
   const { isAuthenticated } = useAuth();
 
   if (isAuthenticated) {
-    return <Navigate to="/patient/home" replace />;
+    return <Navigate to="/resident/home" replace />;
   }
 
   return <Outlet />;

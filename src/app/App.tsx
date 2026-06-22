@@ -9,26 +9,25 @@ import { WebPortalLayout } from "@/components/portal/WebPortalLayout";
 import { StaffGuestRoute, StaffRoute } from "@/components/portal/StaffRoute";
 import { HomePage } from "@/pages/HomePage";
 import { LoginPage } from "@/pages/LoginPage";
+import { SignInPage } from "@/pages/SignInPage";
+import { RegisterPage } from "@/pages/RegisterPage";
 import { MedsPage } from "@/pages/MedsPage";
 import { PortalLanding } from "@/pages/PortalLanding";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { FindCarePage } from "@/pages/FindCarePage";
 import { SubscriptionPage } from "@/pages/SubscriptionPage";
+import { MarketplacePage } from "@/pages/MarketplacePage";
 import { SchedulePage } from "@/pages/SchedulePage";
 import { BlogPage } from "@/pages/BlogPage";
-import { DoctorConsultationPage } from "@/pages/doctor/DoctorConsultationPage";
 import { SosPage } from "@/pages/SosPage";
 import { AdminDashboard } from "@/pages/admin/AdminDashboard";
 import { AdminPatientsPage } from "@/pages/admin/AdminPatientsPage";
 import { AdminPrescriptionsPage } from "@/pages/admin/AdminPrescriptionsPage";
 import { AdminStaffPage } from "@/pages/admin/AdminStaffPage";
+import { AdminAnalyticsPage } from "@/pages/admin/AdminAnalyticsPage";
 import { DoctorDashboard } from "@/pages/doctor/DoctorDashboard";
-import { DoctorPatientsPage } from "@/pages/doctor/DoctorPatientsPage";
 import { DoctorPatientPage } from "@/pages/doctor/DoctorPatientPage";
-import { DoctorPrescribePage } from "@/pages/doctor/DoctorPrescribePage";
 import { DoctorRecordsPage } from "@/pages/doctor/DoctorRecordsPage";
-import { PharmacyDashboard } from "@/pages/pharmacy/PharmacyDashboard";
-import { PharmacyDispensePage } from "@/pages/pharmacy/PharmacyDispensePage";
 import { StaffLoginPage } from "@/pages/portals/StaffLoginPage";
 
 export default function App() {
@@ -38,121 +37,92 @@ export default function App() {
         <StaffAuthProvider>
           <BrowserRouter>
             <Routes>
-            <Route path="/" element={<PortalLanding />} />
+              <Route path="/" element={<PortalLanding />} />
 
-            {/* Patient mobile app */}
-            <Route path="/login" element={<Navigate to="/patient/login" replace />} />
-            <Route path="/home" element={<Navigate to="/patient/home" replace />} />
-            <Route path="/meds" element={<Navigate to="/patient/meds" replace />} />
-            <Route path="/schedule" element={<Navigate to="/patient/schedule" replace />} />
-            <Route path="/blog" element={<Navigate to="/patient/blog" replace />} />
-            <Route path="/profile" element={<Navigate to="/patient/profile" replace />} />
-            <Route path="/sos" element={<Navigate to="/patient/sos" replace />} />
-            <Route path="/dashboard" element={<Navigate to="/patient/home" replace />} />
-            <Route path="/alarms" element={<Navigate to="/patient/schedule" replace />} />
+              {/* Legacy redirects */}
+              <Route path="/login" element={<Navigate to="/resident/login" replace />} />
+              <Route path="/patient/*" element={<Navigate to="/resident/home" replace />} />
+              <Route path="/doctor/*" element={<Navigate to="/driver" replace />} />
+              <Route path="/pharmacy/*" element={<Navigate to="/" replace />} />
 
-            <Route element={<GuestRoute />}>
-              <Route path="/patient/login" element={<LoginPage />} />
-            </Route>
-
-            <Route element={<ProtectedRoute />}>
-              <Route element={<AppLayout />}>
-                <Route path="/patient/home" element={<HomePage />} />
-                <Route path="/patient/meds" element={<MedsPage />} />
-                <Route path="/patient/schedule" element={<SchedulePage />} />
-                <Route path="/patient/blog" element={<BlogPage />} />
-                <Route path="/patient/find" element={<FindCarePage />} />
-                <Route path="/patient/subscription" element={<SubscriptionPage />} />
-                <Route path="/patient/sos" element={<SosPage />} />
-                <Route path="/patient/profile" element={<ProfilePage />} />
+              {/* Resident mobile app */}
+              <Route element={<GuestRoute />}>
+                <Route path="/resident/login" element={<LoginPage />} />
+                <Route path="/resident/signin" element={<SignInPage />} />
+                <Route path="/resident/register" element={<RegisterPage />} />
               </Route>
-            </Route>
 
-            {/* Doctor portal */}
-            <Route element={<StaffGuestRoute role="doctor" />}>
-              <Route path="/doctor/login" element={<StaffLoginPage role="doctor" />} />
-            </Route>
-            <Route element={<StaffRoute role="doctor" />}>
-              <Route
-                element={
-                  <WebPortalLayout
-                    role="doctor"
-                    title="Provider Portal"
-                    subtitle="Fayda-linked EHR"
-                    accent="#6C63FF"
-                    nav={[
-                      { to: "/doctor", label: "Dashboard" },
-                      { to: "/doctor/patients", label: "Patients" },
-                      { to: "/doctor/patient", label: "Patient lookup" },
-                      { to: "/doctor/prescribe", label: "Prescribe" },
-                      { to: "/doctor/records", label: "Health records" },
-                      { to: "/doctor/consultation", label: "Consultation" },
-                    ]}
-                  />
-                }
-              >
-                <Route path="/doctor" element={<DoctorDashboard />} />
-                <Route path="/doctor/patients" element={<DoctorPatientsPage />} />
-                <Route path="/doctor/patient" element={<DoctorPatientPage />} />
-                <Route path="/doctor/prescribe" element={<DoctorPrescribePage />} />
-                <Route path="/doctor/records" element={<DoctorRecordsPage />} />
-                <Route path="/doctor/consultation" element={<DoctorConsultationPage />} />
+              <Route element={<ProtectedRoute />}>
+                <Route element={<AppLayout />}>
+                  <Route path="/resident/home" element={<HomePage />} />
+                  <Route path="/resident/sort" element={<MedsPage />} />
+                  <Route path="/resident/schedule" element={<SchedulePage />} />
+                  <Route path="/resident/community" element={<BlogPage />} />
+                  <Route path="/resident/track" element={<FindCarePage />} />
+                  <Route path="/resident/wallet" element={<SubscriptionPage />} />
+                  <Route path="/resident/marketplace" element={<MarketplacePage />} />
+                  <Route path="/resident/report" element={<SosPage />} />
+                  <Route path="/resident/profile" element={<ProfilePage />} />
+                </Route>
               </Route>
-            </Route>
 
-            {/* Pharmacy portal */}
-            <Route element={<StaffGuestRoute role="pharmacy" />}>
-              <Route path="/pharmacy/login" element={<StaffLoginPage role="pharmacy" />} />
-            </Route>
-            <Route element={<StaffRoute role="pharmacy" />}>
-              <Route
-                element={
-                  <WebPortalLayout
-                    role="pharmacy"
-                    title="Pharmacy Portal"
-                    subtitle="Digital fulfillment"
-                    accent="#0FB8C3"
-                    nav={[
-                      { to: "/pharmacy", label: "Dashboard" },
-                      { to: "/pharmacy/dispense", label: "Dispense" },
-                    ]}
-                  />
-                }
-              >
-                <Route path="/pharmacy" element={<PharmacyDashboard />} />
-                <Route path="/pharmacy/dispense" element={<PharmacyDispensePage />} />
+              {/* Driver portal */}
+              <Route element={<StaffGuestRoute role="driver" />}>
+                <Route path="/driver/login" element={<StaffLoginPage role="driver" />} />
               </Route>
-            </Route>
-
-            {/* Admin portal */}
-            <Route element={<StaffGuestRoute role="admin" />}>
-              <Route path="/admin/login" element={<StaffLoginPage role="admin" />} />
-            </Route>
-            <Route element={<StaffRoute role="admin" />}>
-              <Route
-                element={
-                  <WebPortalLayout
-                    role="admin"
-                    title="Admin Portal"
-                    subtitle="System management"
-                    accent="#0F1B35"
-                    nav={[
-                      { to: "/admin", label: "Overview" },
-                      { to: "/admin/patients", label: "Patients" },
-                      { to: "/admin/prescriptions", label: "Prescriptions" },
-                      { to: "/admin/staff", label: "Staff" },
-                    ]}
-                  />
-                }
-              >
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/patients" element={<AdminPatientsPage />} />
-                <Route path="/admin/prescriptions" element={<AdminPrescriptionsPage />} />
-                <Route path="/admin/staff" element={<AdminStaffPage />} />
+              <Route element={<StaffRoute role="driver" />}>
+                <Route
+                  element={
+                    <WebPortalLayout
+                      role="driver"
+                      title="Driver Portal"
+                      subtitle="Route execution & GPS"
+                      accent="#14B8A6"
+                      nav={[
+                        { to: "/driver", label: "Dashboard" },
+                        { to: "/driver/route", label: "Execute route" },
+                        { to: "/driver/summary", label: "Route summary" },
+                      ]}
+                    />
+                  }
+                >
+                  <Route path="/driver" element={<DoctorDashboard />} />
+                  <Route path="/driver/route" element={<DoctorPatientPage />} />
+                  <Route path="/driver/summary" element={<DoctorRecordsPage />} />
+                </Route>
               </Route>
-            </Route>
 
-            <Route path="*" element={<Navigate to="/" replace />} />
+              {/* Admin portal */}
+              <Route element={<StaffGuestRoute role="admin" />}>
+                <Route path="/admin/login" element={<StaffLoginPage role="admin" />} />
+              </Route>
+              <Route element={<StaffRoute role="admin" />}>
+                <Route
+                  element={
+                    <WebPortalLayout
+                      role="admin"
+                      title="Municipal Admin"
+                      subtitle="City operations"
+                      accent="#052E16"
+                      nav={[
+                        { to: "/admin", label: "Operations" },
+                        { to: "/admin/zones", label: "Zones" },
+                        { to: "/admin/fleet", label: "Fleet" },
+                        { to: "/admin/people", label: "People" },
+                        { to: "/admin/analytics", label: "Analytics" },
+                      ]}
+                    />
+                  }
+                >
+                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin/zones" element={<AdminPatientsPage />} />
+                  <Route path="/admin/fleet" element={<AdminPrescriptionsPage />} />
+                  <Route path="/admin/people" element={<AdminStaffPage />} />
+                  <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+                </Route>
+              </Route>
+
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>
         </StaffAuthProvider>

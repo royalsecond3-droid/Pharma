@@ -1,15 +1,15 @@
 import type {
-  AdminStats,
   HealthRecord,
+  LegacyAdminStats,
+  LegacyStaffProfile,
+  LegacyStaffRole,
   MedicationAlarm,
   PatientBundle,
   PatientListItem,
   Prescription,
   PrescriptionStatus,
-  StaffProfile,
-  StaffRole,
   UserProfile,
-} from "@/types";
+} from "@/types/healthcare";
 import { DEMO_PATIENT_FINS } from "@/data/mockPatients";
 import { getDurationDays, inferDoseTimes } from "@/lib/schedule";
 
@@ -270,7 +270,7 @@ const HEALTH_RECORDS: Record<string, HealthRecord[]> = {
   ],
 };
 
-const STAFF_MOCK: StaffProfile[] = [
+const STAFF_MOCK: LegacyStaffProfile[] = [
   {
     id: 1,
     email: "admin@tanecare.et",
@@ -424,7 +424,7 @@ export const mockStore = {
     return delay(undefined);
   },
 
-  staffLogin(email: string, password: string, role: StaffRole) {
+  staffLogin(email: string, password: string, role: LegacyStaffRole) {
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedPassword = password.trim();
     const staff = STAFF_MOCK.find(
@@ -441,7 +441,7 @@ export const mockStore = {
   },
 
   /** One-click demo login — no password typing required. */
-  staffLoginDemo(role: StaffRole) {
+  staffLoginDemo(role: LegacyStaffRole) {
     const staff = STAFF_MOCK.find((s) => s.role === role);
     if (!staff) {
       return Promise.reject(new Error("Unknown role"));
@@ -575,7 +575,7 @@ export const mockStore = {
     return Promise.reject(new Error("Prescription not found"));
   },
 
-  adminStats(): Promise<AdminStats> {
+  adminStats(): Promise<LegacyAdminStats> {
     const allFin = Object.keys(PROFILES);
     let prescriptions = 0;
     let pending = 0;

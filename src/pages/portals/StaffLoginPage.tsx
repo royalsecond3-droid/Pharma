@@ -14,28 +14,20 @@ const ROLE_CONFIG: Record<
     home: string;
   }
 > = {
-  doctor: {
-    title: "Healthcare Provider Portal",
-    subtitle: "Electronic health records & digital prescribing",
-    demoEmail: "doctor@tanecare.et",
-    demoPassword: "doctor123",
-    accent: "#6C63FF",
-    home: "/doctor",
-  },
-  pharmacy: {
-    title: "Pharmacy Portal",
-    subtitle: "Fayda-verified prescription fulfillment",
-    demoEmail: "pharmacy@tanecare.et",
-    demoPassword: "pharmacy123",
-    accent: "#0FB8C3",
-    home: "/pharmacy",
+  driver: {
+    title: "Driver Portal",
+    subtitle: "Daily routes, GPS tracking & collection completion",
+    demoEmail: "driver@truckngo.et",
+    demoPassword: "driver123",
+    accent: "#14B8A6",
+    home: "/driver",
   },
   admin: {
-    title: "Administration Portal",
-    subtitle: "Platform management & analytics",
-    demoEmail: "admin@tanecare.et",
+    title: "Municipal Admin Portal",
+    subtitle: "Operations, fleet, zones & analytics",
+    demoEmail: "admin@truckngo.et",
     demoPassword: "admin123",
-    accent: "#0F1B35",
+    accent: "#052E16",
     home: "/admin",
   },
 };
@@ -72,11 +64,7 @@ export function StaffLoginPage({ role }: { role: StaffRole }) {
       await login(email.trim(), password, role);
       goHome();
     } catch (e) {
-      setError(
-        e instanceof Error
-          ? e.message
-          : `Wrong credentials for the ${role} portal.`,
-      );
+      setError(e instanceof Error ? e.message : `Wrong credentials for the ${role} portal.`);
     } finally {
       setLoading(false);
     }
@@ -114,28 +102,22 @@ export function StaffLoginPage({ role }: { role: StaffRole }) {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Email
-              </label>
+              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                autoComplete="username"
                 className="mt-1 w-full rounded-xl border border-border bg-input-background px-4 py-3 text-sm outline-none"
               />
             </div>
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Password
-              </label>
+              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                autoComplete="current-password"
                 className="mt-1 w-full rounded-xl border border-border bg-input-background px-4 py-3 text-sm outline-none"
               />
             </div>
@@ -150,19 +132,10 @@ export function StaffLoginPage({ role }: { role: StaffRole }) {
             </button>
           </form>
 
-          <div
-            className="mt-4 rounded-lg p-3 text-xs"
-            style={{ background: `${cfg.accent}12` }}
-          >
-            <p className="font-semibold text-foreground">This portal only</p>
+          <div className="mt-4 rounded-lg p-3 text-xs" style={{ background: `${cfg.accent}12` }}>
+            <p className="font-semibold text-foreground">Demo credentials</p>
             <p className="mt-1 text-muted-foreground">
-              Email: <strong className="text-foreground">{cfg.demoEmail}</strong>
-              <br />
-              Password: <strong className="text-foreground">{cfg.demoPassword}</strong>
-            </p>
-            <p className="mt-2 text-muted-foreground">
-              Each portal has its own login — doctor credentials won&apos;t work on
-              admin or pharmacy.
+              {cfg.demoEmail} / {cfg.demoPassword}
             </p>
           </div>
         </div>

@@ -6,10 +6,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { api } from "@/api/client";
-import type { StaffProfile, StaffRole } from "@/types";
+import { api } from "@/api/truckngoClient";
+import type { StaffProfile, StaffRole } from "@/types/truckngo";
 
-const STORAGE_KEY = "tanecare_staff_session";
+const STORAGE_KEY = "truckngo_staff_session";
 
 interface StaffAuthContextValue {
   staff: StaffProfile | null;
@@ -70,9 +70,7 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
     [staff, login, loginDemo, logout],
   );
 
-  return (
-    <StaffAuthContext.Provider value={value}>{children}</StaffAuthContext.Provider>
-  );
+  return <StaffAuthContext.Provider value={value}>{children}</StaffAuthContext.Provider>;
 }
 
 export function useStaffAuth() {

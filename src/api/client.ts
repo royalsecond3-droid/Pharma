@@ -3,16 +3,16 @@ import { auraService } from "@/services/auraService";
 import { medicationSupplyService } from "@/services/medicationSupplyService";
 import { subscriptionService } from "@/services/subscriptionService";
 import type {
-  AdminStats,
+  LegacyAdminStats,
+  LegacyStaffProfile,
+  LegacyStaffRole,
   MedicationAlarm,
   PatientBundle,
   PatientListItem,
   Prescription,
   PrescriptionStatus,
-  StaffProfile,
-  StaffRole,
   UserProfile,
-} from "@/types";
+} from "@/types/healthcare";
 import { labRequestService } from "@/services/labRequestService";
 import type {
   EquipmentAllocationResult,
@@ -131,16 +131,16 @@ export const api = {
     return request<void>(`/api/alarms/${id}`, { method: "DELETE", fin });
   },
 
-  staffLogin(email: string, password: string, role: StaffRole) {
+  staffLogin(email: string, password: string, role: LegacyStaffRole) {
     const tryMock = () => mockStore.staffLogin(email, password, role);
     if (!USE_API) return tryMock();
-    return request<{ staff: StaffProfile }>("/api/staff/login", {
+    return request<{ staff: LegacyStaffProfile }>("/api/staff/login", {
       method: "POST",
       body: JSON.stringify({ email, password, role }),
     }).catch(() => tryMock());
   },
 
-  staffLoginDemo(role: StaffRole) {
+  staffLoginDemo(role: LegacyStaffRole) {
     return mockStore.staffLoginDemo(role);
   },
 
@@ -238,7 +238,7 @@ export const api = {
 
   adminStats(_staffId: number) {
     if (!USE_API) return mockStore.adminStats();
-    return request<AdminStats>("/api/admin/stats", { staffId: _staffId });
+    return request<LegacyAdminStats>("/api/admin/stats", { staffId: _staffId });
   },
 
   adminPatients(staffId: number, search?: string) {
@@ -254,7 +254,7 @@ export const api = {
 
   adminStaff(_staffId: number) {
     if (!USE_API) return mockStore.adminStaff();
-    return request<{ staff: (StaffProfile & { createdAt: string })[] }>(
+    return request<{ staff: (LegacyStaffProfile & { createdAt: string })[] }>(
       "/api/admin/staff",
       { staffId: _staffId },
     );

@@ -19,3 +19,15 @@
   background: transparent !important;
   border: none !important;
 }
+
+.truckngo-truck-pin,
+.truckngo-stop-pin,
+.truckngo-home-pin {
+  background: transparent !important;
+  border: none !important;
+}
+
+.leaflet-container {
+  font-family: inherit;
+  background: #e8f0e8;
+}

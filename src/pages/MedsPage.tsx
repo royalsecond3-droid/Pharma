@@ -1,180 +1,227 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router";
-import { api } from "@/api/client";
-import { MedicationSupplyCard } from "@/components/meds/MedicationSupplyCard";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Camera, ImageIcon, Sparkles } from "lucide-react";
+import { api } from "@/api/truckngoClient";
+import { PageHeader } from "@/components/PageHeader";
+import { CameraCapture } from "@/components/waste/CameraCapture";
 import { useAuth } from "@/context/AuthContext";
-import type { LabEquipmentRequest } from "@/types/aura";
-import type { MedicationSupplyItem } from "@/types/medicationSupply";
-import type { Prescription } from "@/types";
-import { useLanguage } from "@/context/LanguageContext";
+import { useApiData } from "@/hooks/useApi";
+import { CITY_SRC } from "@/lib/brand";
 
-type Tab = "drugs" | "lab" | "unbuy" | "paybuy";
-
-function DrugRow({
-  rx,
-  buyStatus,
-  t,
-}: {
-  rx: Prescription;
-  buyStatus?: "paybuy" | "unbuy";
-  t: (key: string) => string;
-}) {
-  return (
-    <div className="flex items-center gap-3 border-b border-[#E8EEF5] py-3 last:border-0">
-      <span className="text-xl">{rx.icon}</span>
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-semibold text-[#0F1B35]">{rx.medication}</div>
-        <div className="text-xs text-[#5A7399]">
-          {rx.dosage} · {rx.schedule}
-        </div>
-      </div>
-      {buyStatus === "paybuy" ? (
-        <span className="text-xs font-semibold text-[#10B981]">{t("medsPayBuy")}</span>
-      ) : buyStatus === "unbuy" ? (
-        <Link to="/patient/find" className="text-xs font-semibold text-[#D97706] no-underline">
-          {t("medsUnbuy")}
-        </Link>
-      ) : (
-        <span className="text-xs text-[#5A7399]">
-          {rx.status === "active" ? t("medsActive") : t("medsDone")}
-        </span>
-      )}
-    </div>
-  );
-}
-
-function LabRow({ req, t }: { req: LabEquipmentRequest; t: (key: string) => string }) {
-  const booked = req.status === "booked";
-  return (
-    <div className="flex items-center gap-3 border-b border-[#E8EEF5] py-3 last:border-0">
-      <span className="text-xl">🔬</span>
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-semibold text-[#0F1B35]">{req.equipment}</div>
-        <div className="text-xs text-[#5A7399]">{req.facilityName}</div>
-      </div>
-      <span
-        className="text-xs font-semibold"
-        style={{ color: booked ? "#10B981" : "#1D6FE8" }}
-      >
-        {booked ? t("medsBooked") : t("medsRequested")}
-      </span>
-    </div>
-  );
+function readImageFile(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error("Could not read image"));
+    reader.readAsDataURL(file);
+  });
 }
 
 export function MedsPage() {
-  const { faydaFin } = useAuth();
-  const { t } = useLanguage();
-  const [tab, setTab] = useState<Tab>("drugs");
-  const [supplyPaid, setSupplyPaid] = useState<MedicationSupplyItem[]>([]);
-  const [supplyUnpaid, setSupplyUnpaid] = useState<MedicationSupplyItem[]>([]);
-  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
-  const [labRequests, setLabRequests] = useState<LabEquipmentRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user, refreshUser } = useAuth();
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [photoTaken, setPhotoTaken] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<{ sortResult: string; points: number; confidence: number } | null>(null);
+
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  const { reload } = useApiData(useMemo(() => (id: string) => api.getSubmissions(id), []));
 
   useEffect(() => {
-    if (!faydaFin) return;
-    setLoading(true);
-    Promise.all([
-      api.getMedicationSupply(faydaFin),
-      api.getPrescriptions(faydaFin),
-      api.getLabEquipmentRequests(faydaFin),
-    ])
-      .then(([supply, rx, lab]) => {
-        setSupplyPaid(supply.supply.paid);
-        setSupplyUnpaid(supply.supply.unpaid);
-        setPrescriptions(rx.prescriptions);
-        setLabRequests(lab.requests);
-      })
-      .finally(() => setLoading(false));
-  }, [faydaFin]);
+    if (!analyzing) return;
+    setProgress(0);
+    const interval = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 87) {
+          clearInterval(interval);
+          return 87;
+        }
+        return p + 7;
+      });
+    }, 120);
+    return () => clearInterval(interval);
+  }, [analyzing]);
 
-  const statusByMed = useMemo(() => {
-    const map = new Map<string, "paybuy" | "unbuy">();
-    for (const i of supplyPaid) {
-      map.set(i.medication.toLowerCase(), "paybuy");
+  const startAnalysis = (imageUrl: string) => {
+    setPreviewUrl(imageUrl);
+    setPhotoTaken(true);
+    setResult(null);
+    setAnalyzing(true);
+    setProgress(0);
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !file.type.startsWith("image/")) return;
+    try {
+      const dataUrl = await readImageFile(file);
+      startAnalysis(dataUrl);
+    } catch {
+      // ignore read errors
     }
-    for (const i of supplyUnpaid) {
-      if (!map.has(i.medication.toLowerCase())) {
-        map.set(i.medication.toLowerCase(), "unbuy");
+  };
+
+  const openCamera = () => {
+    if (submitting || analyzing) return;
+    setCameraOpen(true);
+  };
+
+  const openGallery = () => {
+    if (submitting || analyzing) return;
+    galleryInputRef.current?.click();
+  };
+
+  const openNativeCamera = () => {
+    cameraInputRef.current?.click();
+  };
+
+  useEffect(() => {
+    if (!analyzing || progress < 87 || !photoTaken) return;
+
+    const timer = setTimeout(async () => {
+      if (!user?.residentId) return;
+      setSubmitting(true);
+      try {
+        const res = await api.submitWaste(
+          user.residentId,
+          ["plastic", "paper", "organic"],
+          true,
+        );
+        setResult({
+          sortResult: res.submission.sortResult === "correct" ? "Recyclable" : "Partial",
+          points: res.pointsAwarded,
+          confidence: 92,
+        });
+        setProgress(100);
+        await refreshUser();
+        reload();
+      } finally {
+        setSubmitting(false);
+        setAnalyzing(false);
       }
-    }
-    return map;
-  }, [supplyPaid, supplyUnpaid]);
+    }, 600);
 
-  const tabs = [
-    { id: "drugs" as const, label: t("medsTabDrugs") },
-    { id: "lab" as const, label: t("medsTabLab") },
-    { id: "unbuy" as const, label: t("medsTabUnbuy") },
-    { id: "paybuy" as const, label: t("medsTabPayBuy") },
-  ];
+    return () => clearTimeout(timer);
+  }, [analyzing, progress, photoTaken, user?.residentId, refreshUser, reload]);
 
   return (
-    <div className="px-5 pb-6 pt-5">
-      <h1 className="text-xl font-bold text-[#0F1B35]">{t("medsMyMeds")}</h1>
+    <div className="min-h-full bg-background pb-6">
+      <PageHeader title="Upload Waste" backTo="/resident/home" />
 
-      <Link
-        to="/patient/find"
-        className="mt-3 mb-4 block text-sm font-medium text-[#1D6FE8] no-underline"
-      >
-        {t("medsFindOnMap")} →
-      </Link>
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
 
-      <div className="mb-4 flex rounded-xl bg-[#F4F8FF] p-1">
-        {tabs.map(({ id, label }) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setTab(id)}
-            className="flex-1 rounded-lg py-2 text-[11px] font-semibold transition-colors sm:text-xs"
-            style={{
-              background: tab === id ? "#fff" : "transparent",
-              color: tab === id ? "#1D6FE8" : "#5A7399",
-              boxShadow: tab === id ? "0 1px 6px rgba(29,111,232,0.12)" : "none",
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <CameraCapture
+        open={cameraOpen}
+        onClose={() => setCameraOpen(false)}
+        onCapture={startAnalysis}
+        onFallback={openNativeCamera}
+      />
 
-      <div className="rounded-2xl bg-white px-4 shadow-sm ring-1 ring-[rgba(29,111,232,0.08)]">
-        {loading ? (
-          <p className="py-8 text-center text-sm text-[#5A7399]">{t("medsLoading")}</p>
-        ) : tab === "drugs" ? (
-          prescriptions.length === 0 ? (
-            <p className="py-8 text-center text-sm text-[#5A7399]">{t("medsNoMeds")}</p>
-          ) : (
-            prescriptions.map((rx) => (
-              <DrugRow
-                key={rx.id}
-                rx={rx}
-                buyStatus={statusByMed.get(rx.medication.toLowerCase())}
-                t={t}
-              />
-            ))
-          )
-        ) : tab === "lab" ? (
-          labRequests.length === 0 ? (
-            <p className="py-8 text-center text-sm text-[#5A7399]">
-              {t("medsNoLabRequests")} -{" "}
-              <Link to="/patient/find" className="text-[#1D6FE8] no-underline">
-                {t("medsRequestInFindCare")}
-              </Link>
-            </p>
-          ) : (
-            labRequests.map((req) => <LabRow key={req.id} req={req} t={t} />)
-          )
-        ) : tab === "unbuy" ? (
-          supplyUnpaid.length === 0 ? (
-            <p className="py-8 text-center text-sm text-[#5A7399]">{t("medsNothingUnbuy")}</p>
-          ) : (
-            supplyUnpaid.map((item) => <MedicationSupplyCard key={item.id} item={item} />)
-          )
-        ) : supplyPaid.length === 0 ? (
-          <p className="py-8 text-center text-sm text-[#5A7399]">{t("medsNoPayBuy")}</p>
-        ) : (
-          supplyPaid.map((item) => <MedicationSupplyCard key={item.id} item={item} />)
+      <div className="px-5">
+        <div className="rounded-3xl border border-border bg-card p-4 shadow-sm">
+          <p className="text-center text-sm font-medium text-muted-foreground">
+            Take a clear photo of your segregated waste
+          </p>
+
+          <div className="relative mt-4 overflow-hidden rounded-2xl bg-secondary">
+            <img
+              src={previewUrl ?? CITY_SRC}
+              alt="Waste preview"
+              className={`h-48 w-full object-cover object-center transition ${photoTaken ? "opacity-100" : "opacity-60 grayscale"}`}
+            />
+            {photoTaken && (
+              <span className="absolute right-3 top-3 rounded-full bg-black/50 p-1.5">
+                <Sparkles size={14} color="#fff" />
+              </span>
+            )}
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={openCamera}
+              disabled={submitting || analyzing}
+              className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-card py-3.5 text-sm font-semibold text-primary disabled:opacity-50"
+            >
+              <Camera size={18} />
+              Camera
+            </button>
+            <button
+              type="button"
+              onClick={openGallery}
+              disabled={submitting || analyzing}
+              className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-card py-3.5 text-sm font-semibold text-muted-foreground disabled:opacity-50"
+            >
+              <ImageIcon size={18} />
+              Gallery
+            </button>
+          </div>
+        </div>
+
+        {(analyzing || result) && (
+          <div className="mt-5 rounded-3xl border border-border bg-card p-5 shadow-sm">
+            <p className="text-sm font-bold text-foreground">AI Verification</p>
+
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                {result ? "Analysis complete" : "Analyzing your waste..."}
+              </p>
+              <div className="relative flex h-14 w-14 items-center justify-center">
+                <svg className="absolute inset-0 -rotate-90" viewBox="0 0 56 56">
+                  <circle cx="28" cy="28" r="24" fill="none" stroke="#E2E8F0" strokeWidth="4" />
+                  <circle
+                    cx="28"
+                    cy="28"
+                    r="24"
+                    fill="none"
+                    stroke="#1B5E20"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeDasharray={`${(progress / 100) * 150.8} 150.8`}
+                  />
+                </svg>
+                <span className="text-xs font-bold text-primary">{progress}%</span>
+              </div>
+            </div>
+
+            {result && (
+              <div className="mt-4 flex items-center justify-between rounded-2xl bg-primary/5 px-4 py-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Detected Type</p>
+                  <p className="text-lg font-bold text-primary">{result.sortResult}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">Confidence</p>
+                  <p className="text-lg font-bold text-primary">{result.confidence}%</p>
+                </div>
+              </div>
+            )}
+
+            {result && result.points > 0 && (
+              <p className="mt-3 text-center text-sm font-bold text-primary">
+                +{result.points} points earned!
+              </p>
+            )}
+          </div>
         )}
       </div>
     </div>

@@ -1,135 +1,87 @@
-import { useEffect, useState } from "react";
-import { AlertTriangle, MapPin, Phone, ShieldAlert, Users } from "lucide-react";
-import { Link } from "react-router";
+import { useState } from "react";
+import { AlertTriangle, CheckCircle, Trash2 } from "lucide-react";
+import { api } from "@/api/truckngoClient";
+import { AppHeader } from "@/components/AppHeader";
 import { useAuth } from "@/context/AuthContext";
-import { APP_NAME } from "@/lib/brand";
-import { useLanguage } from "@/context/LanguageContext";
 
-const CALL_NUMBER = "+251940515167";
-
-const EMERGENCY_NUMBERS = [
-  { label: "Ethiopia Emergency", number: "911", primary: true },
-  { label: "Ambulance", number: "907", primary: false },
-] as const;
+const ISSUE_TYPES = [
+  { id: "overflow", label: "Bin overflow", icon: Trash2 },
+  { id: "illegal", label: "Illegal dumping", icon: AlertTriangle },
+  { id: "missed", label: "Missed collection", icon: CheckCircle },
+];
 
 export function SosPage() {
   const { user } = useAuth();
-  const { t } = useLanguage();
-  const [holding, setHolding] = useState(false);
-  const [holdProgress, setHoldProgress] = useState(0);
+  const [type, setType] = useState("overflow");
+  const [description, setDescription] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [ticket, setTicket] = useState<string | null>(null);
 
-  const caregiverPhone = user?.phone ?? "+251 911 000 000";
-  const caregiverName = t("sosCaregiverFamily");
-
-  useEffect(() => {
-    if (!holding) return;
-    const start = Date.now();
-    const duration = 2000;
-    const tick = window.setInterval(() => {
-      const p = Math.min(100, ((Date.now() - start) / duration) * 100);
-      setHoldProgress(p);
-      if (p >= 100) {
-        clearInterval(tick);
-        // Direct call
-        window.location.href = `tel:${CALL_NUMBER}`;
-        setHolding(false);
-        setHoldProgress(0);
-      }
-    }, 50);
-    return () => clearInterval(tick);
-  }, [holding]);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user?.residentId) return;
+    setSubmitting(true);
+    try {
+      const res = await api.reportIssue(user.residentId, type, description);
+      setTicket(res.ticketId);
+      setDescription("");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <div className="pb-28">
-      <div className="px-5 pt-5">
-        <div className="flex items-center gap-2">
-          <ShieldAlert size={22} color="#E53E3E" />
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#0F1B35", letterSpacing: -0.3 }}>
-            {t("sosTitle")}
-          </h1>
-        </div>
-        <p style={{ fontSize: 12, color: "#5A7399", marginTop: 4 }}>{t("sosSubtitle")} with {APP_NAME}.</p>
-      </div>
+    <>
+      <AppHeader userName={user?.fullName ?? "Resident"} greeting="Report an issue," showScheduleLink={false} />
+      <div className="px-5 pb-6">
+        <p className="mb-4 text-sm text-muted-foreground">
+          Report overflow bins, illegal dumping, or missed collections. Municipal ops will be notified.
+        </p>
 
-      <div className="mt-8 flex flex-col items-center px-5">
-        <button
-          type="button"
-          onPointerDown={() => setHolding(true)}
-          onPointerUp={() => {
-            if (holdProgress < 100) {
-              setHolding(false);
-              setHoldProgress(0);
-            }
-          }}
-          onPointerLeave={() => {
-            if (holdProgress < 100) {
-              setHolding(false);
-              setHoldProgress(0);
-            }
-          }}
-          style={{
-            width: 200,
-            height: 200,
-            borderRadius: "50%",
-            border: "6px solid #fff",
-            background: holding
-              ? `conic-gradient(#E53E3E ${holdProgress}%, #ff6b6b ${holdProgress}%)`
-              : "linear-gradient(145deg, #E53E3E 0%, #C53030 100%)",
-            color: "#fff",
-            fontSize: 28,
-            fontWeight: 800,
-            cursor: "pointer",
-            boxShadow: "0 12px 40px rgba(229,62,62,0.45)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 4,
-            touchAction: "none",
-            userSelect: "none",
-          }}
-        >
-          <AlertTriangle size={40} />
-          SOS
-          <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.9 }}>{holding ? t("sosKeepHolding") : t("sosHold2Sec")}</span>
-        </button>
-        <p style={{ fontSize: 11, color: "#9BA7B4", marginTop: 16, textAlign: "center" }}>{t("sosReleaseCancel")}</p>
-      </div>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4 grid gap-2">
+            {ISSUE_TYPES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setType(t.id)}
+                className={`flex items-center gap-3 rounded-xl border p-4 text-left ${
+                  type === t.id ? "border-primary bg-primary/5" : "border-border bg-card"
+                }`}
+              >
+                <t.icon size={20} color={type === t.id ? "#0F766E" : "#64748B"} />
+                <span className="text-sm font-semibold">{t.label}</span>
+              </button>
+            ))}
+          </div>
 
-      <div className="mt-6 px-5">
-        <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0F1B35", marginBottom: 10 }}>{t("sosQuickCall")}</h2>
-        <div className="flex flex-col gap-2">
-          <a href={`tel:${caregiverPhone.replace(/\s/g, "")}`} className="flex items-center gap-3 rounded-2xl p-4 no-underline" style={{ background: "#fff", boxShadow: "0 4px 14px rgba(29,111,232,0.08)", border: "1.5px solid rgba(29,111,232,0.08)" }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: "#E0EEFF", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Users size={20} color="#1D6FE8" />
-            </div>
-            <div className="flex-1">
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#0F1B35" }}>{caregiverName}</div>
-              <div style={{ fontSize: 12, color: "#5A7399" }}>{caregiverPhone}</div>
-            </div>
-            <Phone size={18} color="#1D6FE8" />
-          </a>
-          {EMERGENCY_NUMBERS.map((e) => (
-            <a key={e.number} href={`tel:${e.number}`} className="flex items-center gap-3 rounded-2xl p-4 no-underline" style={{ background: e.primary ? "#FEE2E2" : "#fff", boxShadow: "0 4px 14px rgba(229,62,62,0.1)", border: e.primary ? "1.5px solid #E53E3E33" : "1.5px solid rgba(29,111,232,0.08)" }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: e.primary ? "#FECACA" : "#F4F8FF", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Phone size={20} color={e.primary ? "#E53E3E" : "#5A7399"} />
-              </div>
-              <div className="flex-1">
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#0F1B35" }}>{e.label}</div>
-                <div style={{ fontSize: 12, color: "#5A7399" }}>{e.number}</div>
-              </div>
-            </a>
-          ))}
-        </div>
-      </div>
+          <label className="text-xs font-semibold text-muted-foreground">Description</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Describe the issue and location details..."
+            rows={4}
+            required
+            className="mt-2 w-full rounded-xl border border-border bg-input-background p-3 text-sm outline-none"
+          />
 
-      <div className="mx-5 mt-6 flex items-start gap-3 rounded-2xl p-4" style={{ background: "#F4F8FF" }}>
-        <MapPin size={18} color="#1D6FE8" className="mt-0.5 shrink-0" />
-        <div>
-          <p style={{ fontSize: 12, fontWeight: 700, color: "#0F1B35" }}>{t("sosLocationSoon")}</p>
-          <p style={{ fontSize: 11, color: "#5A7399", marginTop: 4 }}>{t("sosLocationBody")} {" "}<Link to="/patient/profile" className="text-primary">{t("navProfile")}</Link>.</p>
-        </div>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="mt-4 w-full rounded-xl bg-destructive py-3.5 text-sm font-bold text-destructive-foreground disabled:opacity-60"
+          >
+            {submitting ? "Submitting..." : "Submit report"}
+          </button>
+        </form>
+
+        {ticket && (
+          <div className="mt-4 rounded-xl border border-primary bg-primary/5 p-4 text-center">
+            <CheckCircle size={24} color="#22C55E" className="mx-auto" />
+            <p className="mt-2 text-sm font-bold">Report submitted</p>
+            <p className="text-xs text-muted-foreground">Ticket: {ticket}</p>
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 }

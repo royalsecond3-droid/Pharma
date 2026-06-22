@@ -11,7 +11,7 @@ const STATUS_COLORS = {
 };
 
 export function PersonalInsightsBlock() {
-  const { faydaFin: fin } = useAuth();
+  const { residentId: fin } = useAuth();
   const [insights, setInsights] = useState<PersonalInsights | null>(null);
 
   useEffect(() => {
